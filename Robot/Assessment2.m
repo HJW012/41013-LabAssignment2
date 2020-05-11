@@ -1,6 +1,12 @@
-%Dobot_1 = Dobot();
+close all;
+clc;
+clear;
+
+Dobot_1 = Dobot();
 %animate(Dobot_1.model,deg2rad( [-90,-60,100,-130,-90, 0]));
 
+
+%% 
 close all;
 clc;
 clear;
