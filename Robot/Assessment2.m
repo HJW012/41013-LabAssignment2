@@ -15,7 +15,7 @@ L5 = Link('d',0.025,'a',0,'alpha',0,'qlim', deg2rad([-85,85]), 'offset', 0);
 Dobot_1 = SerialLink([L1 L2 L3 L4 L5],'name', 'MyDobot');
 workspace = [-1 1 -1 1 -1 1]; 
 scale = 0.5;        
-q = deg2rad([0, 60, 65, -35, 0]);                                                     % Create a vector of initial joint angles        
+q = deg2rad([0, 60, 65, -35, 0]);     
 Dobot_1.plot(q,'workspace',workspace,'scale',scale);
 
 Dobot_1.teach();
