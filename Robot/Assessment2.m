@@ -7,6 +7,31 @@ Dobot_1 = Dobot([0,0,0]);
 
 Dobot_1.model.teach();
 
+%% Environment Initialisation
+close all;
+clc;
+clear;
+
+hold on;
+
+table = Objects('table.ply', [0 0 0], 0.8911);
+
+yellowCrate = Objects('yellowCrate.ply', [-0.75 -0.25 0.8911], 0.0664);
+    
+blueCrate = Objects('blueCrate.ply', [-0.75 0 0.8911], 0.0664);
+
+redCrate = Objects('redCrate.ply', [-0.75 0.25 0.8911], 0.0664);
+
+redPen = Objects('redPen.ply', [0.75 0.35 0.8911], 0.0664);
+
+bluePen = Objects('bluePen.ply', [0.15 -0.1 0.8911], 0.0664);
+
+pencil1 = Objects('pencil.ply', [0.3 0.2 0.8911], 0.0664);
+
+pencil2 = Objects('pencil.ply', [0 -0.3 0.8911], 0.0664);
+    
+Dobot_1 = Dobot([0,0,0.8911]);
+animate(Dobot_1.model, deg2rad([45, 27, 64, -70, 0]));
 
 %% Ellipsoid Collision Checking Calculated Trajectory
 close all;

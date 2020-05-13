@@ -4,7 +4,7 @@ classdef Dobot < handle
         model;
         
         %> workspace
-        workspace = [-0.5 0.5 -0.5 0.5 0 0.5];   
+        workspace = [-1.5 1.5 -1.5 1.5 0 1.5];   
                
         %> If we have a tool model which will replace the final links model, combined ply file of the tool model and the final link models
         toolModelFilename = []; % Available are: 'DabPrintNozzleTool.ply';        
