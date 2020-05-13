@@ -21,7 +21,7 @@ L4 = Link('d',0,'a',0.05,'alpha',-pi/2,'qlim', deg2rad([-90,90]), 'offset', 0);
 L5 = Link('d',0.025,'a',0,'alpha',0,'qlim', deg2rad([-85,85]), 'offset', 0);
 
 Dobot_1 = SerialLink([L1 L2 L3 L4 L5],'name', 'MyDobot');
-workspace = [-1 1 -1 1 -1 1]; 
+workspace = [-1 1 -1 1 0 1]; 
 scale = 0.5;        
 q = deg2rad([45, 27, 64, -70, 0]);     
 Dobot_1.plot(q,'workspace',workspace,'scale',scale);
@@ -72,20 +72,23 @@ cubePoints = [ cubePoints ...
 cubeAtOrigin_h = plot3(cubePoints(:,1),cubePoints(:,2),cubePoints(:,3),'r.');
 axis equal;
          
+q = deg2rad([45, 27, 64, -70, 0]); 
 tr = zeros(4,4,Dobot_1.n+1);
 tr(:,:,1) = Dobot_1.base;
 L = Dobot_1.links;
 for i = 1 : Dobot_1.n
-    tr(:,:,i+1) = tr(:,:,i) * trotz(q(i)) * transl(0,0,L(i).d) * transl(L(i).a,0,0) * trotx(L(i).alpha);
+    tr(:,:,i+1) = tr(:,:,i) * trotz(q(i)+L(i).offset) * transl(0,0,L(i).d) * transl(L(i).a,0,0) * trotx(L(i).alpha);
 end
 
 % Go through each ellipsoid
 for i = 1: size(tr,3)
     cubePointsAndOnes = [inv(tr(:,:,i)) * [cubePoints,ones(size(cubePoints,1),1)]']';
     updatedCubePoints = cubePointsAndOnes(:,1:3);
-    %plot3(updatedCubePoints(:,1),updatedCubePoints(:,2),updatedCubePoints(:,3),'b.');
+    plot3(updatedCubePoints(:,1),updatedCubePoints(:,2),updatedCubePoints(:,3),'b.');
     radius = radii(i,:);
-    algebraicDist = GetAlgebraicDist(updatedCubePoints, tr(1:3,4,i)', radius);
+    [x,y,z] = ellipsoid(centrePoint(1), centrePoint(2), centrePoint(3), radius(1), radius(2), radius(3));
+    surf(x,y,z)
+    algebraicDist = GetAlgebraicDist(updatedCubePoints, centrePoint, radius);
     pointsInside = find(algebraicDist < 1);
     disp(['There are ', num2str(size(pointsInside,1)),' points inside the ',num2str(i),'th ellipsoid']);
 end
