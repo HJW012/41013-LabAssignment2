@@ -72,7 +72,7 @@ cubePoints = [ cubePoints ...
 cube1Points = cubePoints + repmat([0.3,0,0.2],size(cubePoints,1),1);
 cube1_h = plot3(cube1Points(:,1),cube1Points(:,2),cube1Points(:,3),'r.');
 
-cube2Points = cubePoints + repmat([0,-0.3,0.1],size(cubePoints,1),1);
+cube2Points = cubePoints + repmat([0,-0.2,0.1],size(cubePoints,1),1);
 cube2_h = plot3(cube2Points(:,1),cube2Points(:,2),cube2Points(:,3),'b.');
 
 cubes = zeros(2646,3,2);
@@ -108,6 +108,7 @@ for j = 1:1:size(qMatrix,1)
         
         break;
     end
+        
     pause(0.01);
 end
 
@@ -248,7 +249,7 @@ function collisionCheck = CheckEllipsoidCollision(cubes, jointAngles, robot, rad
     % Go through each ellipsoid
     for i = 1: size(tr,3)
         for j = 1:size(cubes,3)
-            cubePointsAndOnes = [inv(tr(:,:,i)) * [cubes(:,:,j),ones(size(cubes(:,:,j),1),1)]']';
+            cubePointsAndOnes = [inv(tr(:,:,i)) * [cubes(:,:,j),ones(size(cubePoints,1),1)]']';
             updatedCubePoints = cubePointsAndOnes(:,1:3);
             %plot3(updatedCubePoints(:,1),updatedCubePoints(:,2),updatedCubePoints(:,3),'b.');
             radius = radii(i,:);
@@ -264,7 +265,8 @@ function collisionCheck = CheckEllipsoidCollision(cubes, jointAngles, robot, rad
         end
         if 0 < collisionCheck
             break;
-        end       
+        end
+                
     end
 
 end
