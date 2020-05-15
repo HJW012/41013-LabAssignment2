@@ -417,7 +417,7 @@ classdef Dobot < handle
             end
         end
         %% 
-        function advancedTeach_callback(self, src, name, j, handles)
+        function advancedTeach_callback(src, name, j, handles)
             % called on changes to a slider or to the edit box showing joint coordinate
             %
             % src      the object that caused the event
@@ -464,7 +464,7 @@ classdef Dobot < handle
 
 
             % compute the robot tool pose
-            T6 = handles.robot.fkine(info.q);
+            T6 = handles.self.model.fkine(info.q);
 
             % convert orientation to desired format
             switch handles.orientation
@@ -490,20 +490,20 @@ classdef Dobot < handle
 
         end
 
-        function record_callback(self, robot, handles)
+        function record_callback(robot, handles)
 
             if ~isempty(handles.callback)
                 handles.callback(h.q);
             end
         end
 
-        function quit_callback(self, robot, handles)
+        function quit_callback(robot, handles)
             set(handles.fig, 'ResizeFcn', '');
             delete(handles.panel);
             set(handles.curax, 'Units', 'Normalized', 'OuterPosition', [0 0 1 1])
         end
 
-        function resize_callback(self, robot, handles)
+        function resize_callback(robot, handles)
 
             % come here on figure resize events
             fig = gcbo;   % this figure (whose callback is executing)

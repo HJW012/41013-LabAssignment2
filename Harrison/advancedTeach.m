@@ -66,7 +66,7 @@ function advancedTeach(robot, varargin)
     
     %-------------------------------
     % parameters for advancedTeach panel
-    bgcol = [135 206 250]/255;  % background color
+    bgcol = [250 100 100]/255;  % background color
     height = 0.06;  % height of slider rows
     %-------------------------------
     
