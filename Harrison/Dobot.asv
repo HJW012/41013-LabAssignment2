@@ -188,7 +188,7 @@ classdef Dobot < handle
 
             % shrink the current axes to make room
             %   [l b w h]
-            set(ax, 'OuterPosition', [0.25 0 0.70 1])
+            set(ax, 'OuterPosition', [0.25 0.25 0.70 0.7])
 
             handles.curax = ax;
 
@@ -198,10 +198,18 @@ classdef Dobot < handle
                 'BackGroundColor', bgcol,...
                 'Position', [0 0 .25 1]);
             set(panel, 'Units', 'pixels'); % stop automatic resizing
-            handles.panel = panel;
+            
+            panel2 = uipanel(handles.fig, ...
+                'Title', 'test', ...
+                'BackGroundColor', bgcol, ...
+                'Position', [0.25 0 0.75 0.25]);
+            set(panel2, 'Units', 'pixels');
+            
+            handles.panel1 = panel;
+            handles.panel2 = panel2;
             set(handles.fig, 'Units', 'pixels');
-
-            set(handles.fig, 'ResizeFcn', @(src,event) resize_callback(robot, handles));
+            set(handles.fig, 'ResizeFcn', @(src,event) self.resize_callback(self.model, handles));
+            
             
              %---- get the current robot state
     
@@ -225,7 +233,7 @@ classdef Dobot < handle
             end
             handles.q = q;
             T6 = self.model.fkine(q);
-            
+                          
             %---- now make the sliders
             n = self.model.n;
             for j=1:n
@@ -383,10 +391,20 @@ classdef Dobot < handle
                 'Position', [0.80 height*(0)+.01 0.15 height], ...
                 'FontUnits', 'normalized', ...
                 'FontSize', 0.7, ...
-                'CallBack', @(src,event) self.quit_callback(robot, handles), ...
+                'CallBack', @(src,event) self.quit_callback(self.model, handles), ...
                 'BackgroundColor', 'white', ...
                 'ForegroundColor', 'red', ...
                 'String', 'X');
+            
+            uicontrol(panel, 'Style', 'pushbutton', ...
+                'Units', 'normalized', ...
+                'Position', [0 0 0.25 0.06], ...
+                'FontUnits', 'normalized', ...
+                'FontSize', 0.7, ...
+                'CallBack', @(src,event) self.quit_callback(self.model, handles), ...
+                'BackgroundColor', 'white', ...
+                'ForegroundColor', 'red', ...
+                'String', 'Jog Linear Rail +X');
 
             % the record button
             handles.record = [];
@@ -396,7 +414,7 @@ classdef Dobot < handle
                 'Position', [0.1 height*(0)+.01 0.30 height], ...
                 'FontUnits', 'normalized', ...
                 'FontSize', 0.6, ...
-                'CallBack', @(src,event) self.record_callback(robot, handles), ...
+                'CallBack', @(src,event) self.record_callback(self.model, handles), ...
                 'BackgroundColor', 'red', ...
                 'ForegroundColor', 'white', ...
                 'String', 'REC');
@@ -417,7 +435,7 @@ classdef Dobot < handle
             end
         end
         %% 
-        function advancedTeach_callback(src, name, j, handles)
+        function advancedTeach_callback(self, src, name, j, handles)
             % called on changes to a slider or to the edit box showing joint coordinate
             %
             % src      the object that caused the event
@@ -464,7 +482,7 @@ classdef Dobot < handle
 
 
             % compute the robot tool pose
-            T6 = handles.self.model.fkine(info.q);
+            T6 = handles.robot.fkine(info.q);
 
             % convert orientation to desired format
             switch handles.orientation
@@ -490,30 +508,33 @@ classdef Dobot < handle
 
         end
 
-        function record_callback(robot, handles)
+        function record_callback(self, robot, handles)
 
             if ~isempty(handles.callback)
                 handles.callback(h.q);
             end
         end
 
-        function quit_callback(robot, handles)
+        function quit_callback(self, robot, handles)
             set(handles.fig, 'ResizeFcn', '');
-            delete(handles.panel);
+            delete(handles.panel1);
+            delete(handles.panel2);
             set(handles.curax, 'Units', 'Normalized', 'OuterPosition', [0 0 1 1])
         end
 
-        function resize_callback(robot, handles)
+        function resize_callback(self, robot, handles)
 
             % come here on figure resize events
             fig = gcbo;   % this figure (whose callback is executing)
             fs = get(fig, 'Position');  % get size of figure
-            ps = get(handles.panel, 'Position');  % get position of the panel
+            ps1 = get(handles.panel1, 'Position');  % get position of the panel
+            ps2 = get(handles.panel2, 'Position');  % get position of the panel
             % update dimensions of the axis area
             set(handles.curax, 'Units', 'pixels', ...
-                'OuterPosition', [ps(3) 0 fs(3)-ps(3) fs(4)]);
+                'OuterPosition', [ps1(3) ps2(2) fs(3)-ps1(3) fs(4)]);
             % keep the panel anchored to the top left corner
-            set(handles.panel, 'Position', [1 fs(4)-ps(4) ps(3:4)]);
+            set(handles.panel1, 'Position', [0 0 ps1(3) ps1(4)]);
+            set(handles.panel2, 'Position', [ps2(1) 0 ps2(4) ps2(3:4)]);
         end
     end
 end

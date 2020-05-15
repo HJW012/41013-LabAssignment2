@@ -246,3 +246,11 @@ for i =0:steps
     drawnow();
 end
 
+%% Advanced Teach
+close all;
+clear;
+clc;
+
+robot = Dobot();
+q = deg2rad([0, 60, 65, -35, 0]);   
+robot.model.animate(q);
