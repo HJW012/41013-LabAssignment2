@@ -198,4 +198,51 @@ drawnow();
 axis equal;
 camlight;
 
-           
+%% Movement on linear rail
+close all;
+clear;
+clc;
+
+linearRailHeight = 0.051;
+robotBaseWidth = 0.157852;
+
+linearRailPose = transl(0, 0, 0);
+robotBasePose = transl(linearRailPose(1, 4)+robotBaseWidth/2, linearRailPose(2, 4), linearRailPose(3, 4) + linearRailHeight);
+
+[modelF, modelV, modelData] = plyread("LinearRail.ply", "tri");
+                      vertexColours = [modelData.vertex.red, modelData.vertex.green, modelData.vertex.blue] / 255;
+                      vertexCount = size(modelV, 1);
+modelMesh = trisurf(modelF,modelV(:,1)+ linearRailPose(1,4),modelV(:,2) + linearRailPose(2,4), modelV(:,3) + linearRailPose(3,4),'FaceVertexCData',vertexColours,'EdgeColor','interp','EdgeLighting','flat');
+                    
+updatedPoints = [linearRailPose * [modelV, ones(vertexCount, 1)]']';
+modelMesh.Vertices = updatedPoints(:, 1:3);
+
+robot = Dobot();
+robot.model.base = robotBasePose;
+q = deg2rad([90, 60, 65, -35, 0]);   
+robot.model.animate(q);
+
+railLength = 1.125;
+totalTravelDist = railLength-robotBaseWidth;
+axis equal;
+camlight;
+
+
+
+pause();
+
+steps = 100;
+for i =0:steps
+    robot.model.base = transl(linearRailPose(1, 4)+robotBaseWidth/2 + i * totalTravelDist/steps, linearRailPose(2, 4), linearRailPose(3, 4) + linearRailHeight);
+    q = robot.model.getpos;
+    robot.model.animate(q);
+    drawnow();
+end
+
+for i =0:steps
+    robot.model.base = transl(linearRailPose(1, 4) + railLength - robotBaseWidth/2 - i * totalTravelDist/steps, linearRailPose(2, 4), linearRailPose(3, 4) + linearRailHeight);
+    q = robot.model.getpos;
+    robot.model.animate(q);
+    drawnow();
+end
+
