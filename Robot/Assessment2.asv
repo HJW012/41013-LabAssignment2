@@ -289,7 +289,7 @@ end
 
 Dobot_1.plot(qMatrix,'trail','r-') 
 
-%% Driving robot using target joint angles including Emergency Stop Button
+%% Driving robot using target joint angles
 close all;
 clc;
 clear;
@@ -346,10 +346,16 @@ for k = 1:(size(qTrajectory,1) - 1)
 
     for j = 1:1:size(qMatrix,1)
         position = qMatrix(j,:);
-                        
+        
+        emergencyStop = checkEmergencyStop();
+        
+        %disp(['Emergency Stop: ', num2str(emergencyStop)]);
+                
         while ((emergencyStop == 1) || (lightCurtain == 1))
-            pause(0.01);
+            emergencyStop = checkEmergencyStop();
+            
         end
+        
         
         animate(Dobot_1.model, position)
 
@@ -390,6 +396,16 @@ for q1 = qlim(1,1):stepRads:qlim(1,2)
 end
 
 plot3(pointCloud(:,1),pointCloud(:,2),pointCloud(:,3),'r.');
+
+
+
+%% checkEmergencyStop
+
+function emergencyStop = checkEmergencyStop()
+    emergencyStop = gui.EStop_OutputFcn();
+
+
+end
 
 
 
