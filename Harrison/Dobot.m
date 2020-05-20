@@ -70,7 +70,7 @@ classdef Dobot < handle
         %% PlotAndColourRobot
         % Given a robot index, add the glyphs (vertices and faces) and
         % colour them in if data is available 
-       
+        % Loading models downloaded from Dobot support website
         function PlotAndColourRobot(self)
             % Import ply files and assign to each robot link
             for linkIndex = 0:self.model.n

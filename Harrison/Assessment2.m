@@ -198,7 +198,7 @@ drawnow();
 axis equal;
 camlight;
 
-%% Movement on linear rail
+%% Movement on linear rail - Using model downloaded from Dobot support website
 close all;
 clear;
 clc;
