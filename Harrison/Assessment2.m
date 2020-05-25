@@ -226,15 +226,20 @@ railLength = 1.125;
 totalTravelDist = railLength-robotBaseWidth;
 axis equal;
 camlight;
-
-
+CloneFig(1, 2)
 
 pause();
 
 steps = 100;
 for i =0:steps
+    
     robot.model.base = transl(linearRailPose(1, 4)+robotBaseWidth/2 + i * totalTravelDist/steps, linearRailPose(2, 4), linearRailPose(3, 4) + linearRailHeight);
     q = robot.model.getpos;
+    figure(2);
+    robot.model.animate(q);
+    drawnow();
+    
+    figure(2);
     robot.model.animate(q);
     drawnow();
 end
@@ -242,6 +247,11 @@ end
 for i =0:steps
     robot.model.base = transl(linearRailPose(1, 4) + railLength - robotBaseWidth/2 - i * totalTravelDist/steps, linearRailPose(2, 4), linearRailPose(3, 4) + linearRailHeight);
     q = robot.model.getpos;
+    figure(2);
+    robot.model.animate(q);
+    drawnow();
+    
+    figure(2);
     robot.model.animate(q);
     drawnow();
 end

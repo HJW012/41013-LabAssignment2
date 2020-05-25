@@ -36,7 +36,6 @@ classdef Objects < handle
             
             % Update the pose of the object
             self.pose = eye(4) * transl(position(1,1), position(1,2), position(1,3));
-            
             % Store the height of the object
             self.height = height;
        
