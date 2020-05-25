@@ -37,13 +37,13 @@ animate(Dobot_1.model, deg2rad([45, 27, 64, -70, 0]));
 cam = CentralCamera('focal', 0.08, 'pixel', 10e-5, ...
 'resolution', [1024 1024], 'centre', [512 512],'name', 'OverheadCamera');
 
-%Display UR10
+% Set centre of camera
 Tc0 = eye(4) * transl(0,0,2.5) * troty(pi);
 
-% plot camera and points
+% plot camera
 cam.T = Tc0;
 
-% this is the 'external' view of the points and the camera
+% this is the 'external' view of the camera
 %plot_sphere(P, 0.05, 'b');
 cam.plot_camera('Tcam',Tc0,'label','scale',0.15);
 
@@ -54,7 +54,15 @@ cam.plot(pencil2.pose(1:3,4), 'Tcam', Tc0, 'o'); % create the camera view
 cam.plot(redPen.pose(1:3,4), 'Tcam', Tc0, '*'); % create the camera view
 cam.plot(bluePen.pose(1:3,4), 'Tcam', Tc0, '*'); % create the camera view
 
+disp(pencil1.pose);
+uv = cam.project(pencil1.pose(1:3,4), 'Tcam', Tc0, 'o');
 
+Z = cam.T(3,4) - table.height;
+
+% Calculate object's X and Y position from the centre using the data from
+% the camera
+posX = cam.T(1,4) - ((uv(1) - cam.pp(1))*Z)/(10000*cam.f);
+posY = cam.T(2,4) + ((uv(2) - cam.pp(2))*Z)/(10000*cam.f);
 
 %% Ellipsoid Collision Checking Calculated Trajectory
 close all;
