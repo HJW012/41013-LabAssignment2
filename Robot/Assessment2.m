@@ -47,22 +47,41 @@ cam.T = Tc0;
 %plot_sphere(P, 0.05, 'b');
 cam.plot_camera('Tcam',Tc0,'label','scale',0.15);
 
+%% Calculate position of objects using camera data
 cam.clf();
-cam.plot(pencil1.pose(1:3,4), 'Tcam', Tc0, 'o'); % create the camera view
+uv1 = cam.plot(pencil1.pose(1:3,4), 'Tcam', Tc0, 'o'); % create the camera view
 cam.hold(true);
-cam.plot(pencil2.pose(1:3,4), 'Tcam', Tc0, 'o'); % create the camera view
-cam.plot(redPen.pose(1:3,4), 'Tcam', Tc0, '*'); % create the camera view
-cam.plot(bluePen.pose(1:3,4), 'Tcam', Tc0, '*'); % create the camera view
-
-disp(pencil1.pose);
-uv = cam.project(pencil1.pose(1:3,4), 'Tcam', Tc0, 'o');
+uv2 = cam.plot(pencil2.pose(1:3,4), 'Tcam', Tc0, 'o'); % create the camera view
+uv3 = cam.plot(redPen.pose(1:3,4), 'Tcam', Tc0, '*'); % create the camera view
+uv4 = cam.plot(bluePen.pose(1:3,4), 'Tcam', Tc0, '*'); % create the camera view
 
 Z = cam.T(3,4) - table.height;
 
 % Calculate object's X and Y position from the centre using the data from
 % the camera
-posX = cam.T(1,4) - ((uv(1) - cam.pp(1))*Z)/(10000*cam.f);
-posY = cam.T(2,4) + ((uv(2) - cam.pp(2))*Z)/(10000*cam.f);
+posX1 = cam.T(1,4) - ((uv1(1) - cam.pp(1))*Z)/(10000*cam.f);
+posY1 = cam.T(2,4) + ((uv1(2) - cam.pp(2))*Z)/(10000*cam.f);
+
+posX2 = cam.T(1,4) - ((uv2(1) - cam.pp(1))*Z)/(10000*cam.f);
+posY2 = cam.T(2,4) + ((uv2(2) - cam.pp(2))*Z)/(10000*cam.f);
+
+posX3 = cam.T(1,4) - ((uv3(1) - cam.pp(1))*Z)/(10000*cam.f);
+posY3 = cam.T(2,4) + ((uv3(2) - cam.pp(2))*Z)/(10000*cam.f);
+
+posX4 = cam.T(1,4) - ((uv4(1) - cam.pp(1))*Z)/(10000*cam.f);
+posY4 = cam.T(2,4) + ((uv4(2) - cam.pp(2))*Z)/(10000*cam.f);
+
+disp(pencil1.pose);
+disp(['Object 1 calculated: ', num2str(posX1), ', ', num2str(posY1)]);
+
+disp(pencil2.pose);
+disp(['Object 2 calculated: ', num2str(posX2), ', ', num2str(posY2)]);
+
+disp(redPen.pose);
+disp(['Object 3 calculated: ', num2str(posX3), ', ', num2str(posY3)]);
+
+disp(bluePen.pose);
+disp(['Object 4 calculated: ', num2str(posX4), ', ', num2str(posY4)]);
 
 %% Ellipsoid Collision Checking Calculated Trajectory
 close all;
