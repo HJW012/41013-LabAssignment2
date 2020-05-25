@@ -35,10 +35,10 @@ animate(Dobot_1.model, deg2rad([45, 27, 64, -70, 0]));
 
 % Build Camera
 cam = CentralCamera('focal', 0.08, 'pixel', 10e-5, ...
-'resolution', [1024 1024], 'centre', [512 512],'name', 'OverheadCamera');
+'resolution', [1024 1024], 'centre', [512 512],'name', 'UR10camera');
 
 %Display UR10
-Tc0 = eye(4) * transl(0,0,2.5) * troty(pi);
+Tc0 = eye(4) * transl(0,0,2) * troty(pi);
 
 % plot camera and points
 cam.T = Tc0;
@@ -48,13 +48,8 @@ cam.T = Tc0;
 cam.plot_camera('Tcam',Tc0,'label','scale',0.15);
 
 cam.clf();
-cam.plot(pencil1.pose(1:3,4), 'Tcam', Tc0, 'o'); % create the camera view
+cam.plot(P, 'Tcam', Tc0, 'o'); % create the camera view
 cam.hold(true);
-cam.plot(pencil2.pose(1:3,4), 'Tcam', Tc0, 'o'); % create the camera view
-cam.plot(redPen.pose(1:3,4), 'Tcam', Tc0, '*'); % create the camera view
-cam.plot(bluePen.pose(1:3,4), 'Tcam', Tc0, '*'); % create the camera view
-
-
 
 %% Ellipsoid Collision Checking Calculated Trajectory
 close all;
