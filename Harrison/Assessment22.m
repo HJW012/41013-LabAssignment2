@@ -25,6 +25,8 @@ pencil2 = Objects('pencil.ply', [0 -0.3 0.8911], 0.0664);
 Dobot_1 = Dobot([0,0,0.8911]);
 animate(Dobot_1.model, deg2rad([45, 27, 64, -70, 0]));
 
+redPen.TransformObject(transl(0.75, 0.35, 0.8911) * trotz(deg2rad(-70)));
+
 % Build Camera
 cam = CentralCamera('focal', 0.08, 'pixel', 10e-5, ...
 'resolution', [1024 1024], 'centre', [512 512],'name', 'OverheadCamera');
@@ -36,7 +38,7 @@ Tc0 = eye(4) * transl(0,0,2.5) * troty(pi);
 cam.T = Tc0;
 cam.plot_camera('Tcam',Tc0,'scale',0.15);
 % this is the 'external' view of the camera
-
+%tablePlot = cam.plot(table.verts', 'Tobj', table.pose, 'MarkerSize', 1, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', 'g');
 yellowCratePlot = cam.plot(yellowCrate.verts', 'Tobj', yellowCrate.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', 'g');
 blueCratePlot = cam.plot(blueCrate.verts', 'Tobj', blueCrate.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b');
 redCratePlot = cam.plot(redCrate.verts', 'Tobj', redCrate.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r');
@@ -53,7 +55,7 @@ fig2Axes = gca(fig2);
 set(fig2, 'CurrentAxes', fig2Axes);
 hold on;
 cam.hold();
-
+%tableK = convhull(tablePlot');
 yellowCrateK = convhull(yellowCratePlot');
 blueCrateK = convhull(blueCratePlot');
 redCrateK = convhull(redCratePlot');
@@ -62,6 +64,7 @@ bluePenK = convhull(bluePenPlot');
 pencil1K = convhull(pencil1Plot');
 pencil2K = convhull(pencil2Plot');
 
+%patch(fig2Axes, tablePlot(1, tableK), tablePlot(2, tableK), 'r');
 patch(fig2Axes, yellowCratePlot(1, yellowCrateK), yellowCratePlot(2, yellowCrateK), 'g');
 patch(fig2Axes, blueCratePlot(1, blueCrateK), blueCratePlot(2, blueCrateK), 'b');
 patch(fig2Axes, redCratePlot(1, redCrateK), redCratePlot(2, redCrateK), 'r');
@@ -70,6 +73,8 @@ patch(fig2Axes, bluePenPlot(1, bluePenK), bluePenPlot(2, bluePenK), 'b');
 patch(fig2Axes, pencil1Plot(1, pencil1K), pencil1Plot(2, pencil1K), 'g');
 patch(fig2Axes, pencil2Plot(1, pencil2K), pencil2Plot(2, pencil2K), 'g');
 
+%set(fig2Axes, 'visible', 'off');
+
 saveas(fig2, 'blobtest.jpg');
 
 fig3 = figure(3);
@@ -77,11 +82,12 @@ im = imread('blobtest.jpg');
 greyIM = rgb2gray(im);
 bwIM = imbinarize(greyIM);
 bwIM = imcomplement(bwIM);
-bwIM = bwareaopen(bwIM, 200);
+bwIM = bwareaopen(bwIM, 100);
 se = strel('disk',2);
 bwIM = imclose(bwIM,se);
 [B, L] = bwboundaries(bwIM); %B stores seperate matrix of boundary points for each blob - just check if blobs are within matrices and there ya go
 imshow(bwIM);
+imwrite(bwIM, 'bwBlobtest.jpg');
 hold on
 %{
 for k = 1:length(B)
@@ -93,15 +99,86 @@ end
 s = regionprops(bwIM, 'centroid', 'area', 'perimeter', 'orientation');
 centroids = cat(1, s.Centroid);
 perimeters = cat(1, s.Perimeter);
+orientations = cat(1, s.Orientation);
 [numRows numCols] = size(centroids);
 
+%Filter out unwanted blobs
+%{
 for i = 1:numRows
-    if perimeters(i) < 300
-       plot(centroids(i, 1), centroids(i, 2), 'b*'); 
-    end
+   if perimeters(i) > 300
+       s(i, :) = [];
+   end
 end
 
-%Need to now get locations in global workspace
+centroids = cat(1, s.Centroid);
+perimeters = cat(1, s.Perimeter);
+orientations = cat(1, s.Orientation);
+[numRows numCols] = size(centroids);
+%}
+for i = 1:numRows
+    plot(centroids(i, 1), centroids(i, 2), 'b*'); 
+end
+
+fig4 = figure(4);
+set(0, 'CurrentFigure', fig4);
+imshow(im);
+hold on;
+for i = 1:numRows
+    plot(centroids(i, 1), centroids(i, 2), 'y*'); 
+end
+
+imInfo = imfinfo('bwBlobtest.jpg');
+imResolution(1) = imInfo.Width;
+imResolution(2) = imInfo.Height;
+
+% Pixel offsets in image to get rid of axes and title - assuming image
+% resolution is 875 x 656
+xLeftOffset = (185.71 / 875) * imResolution(1);
+xRightOffset = (155 / 875) * imResolution(1);
+yBottomOffset = (73 / 656) * imResolution(2);
+yTopOffset = (50 / 656) * imResolution(2);
+
+offsetCentroidX = centroids(:, 1) - xLeftOffset;
+offsetCentroidY = centroids(:, 2) - yBottomOffset;
+
+imageWorkspace(1) = imResolution(1) - xLeftOffset - xRightOffset; %Get axis limits within image in pixels
+imageWorkspace(2) = imResolution(2) - yBottomOffset - yTopOffset;
+
+cameraWorkspace = xlim(fig2Axes); % Get axis limits of camera image plane - still technically in pixels but not the same 
+
+%plotting mapped points on original uv plot of camera image plane
+mappedCentroid(:, 1) = (offsetCentroidX / imageWorkspace(1)) * (cameraWorkspace(2) - cameraWorkspace(1));
+mappedCentroid(:, 2) = (offsetCentroidY / imageWorkspace(2)) * (cameraWorkspace(2) - cameraWorkspace(1)) + (abs(yBottomOffset - yTopOffset) / imageWorkspace(2)) * (cameraWorkspace(2) - cameraWorkspace(1));
+
+plot(fig2Axes, mappedCentroid(:, 1), mappedCentroid(:, 2), 'black*');
+
+%Calculating global coordinates
+camHeight = 2.5 - 0.8911; % Height of cam above table defined up in camera transform Tc0 and table height
+
+Z = cam.T(3,4) - table.height;
+
+% Calculate object's X and Y position from the centre using the data from
+% the camera
+posX = cam.T(1,4) - ((mappedCentroid(:, 1) - cam.pp(1))*Z)/(10000*cam.f);
+posY = cam.T(2,4) + ((mappedCentroid(:, 2) - cam.pp(2))*Z)/(10000*cam.f);
+pixelColours = impixel(im, centroids(:, 1), centroids(:, 2));
+[numRows numCols] = size(pixelColours);
+
+
+%Check pixel colours to remove unwanted blobs and determine targets vs
+%crates
+
+j = 1;
+for i = 1:numRows
+   avg =  (pixelColours(i, 1) + pixelColours(i, 2) + pixelColours(i, 3)) / 3;
+   if (avg < 200 && avg > 25)
+       globalPose(j, 1) = posX(i);
+       globalPose(j, 2) = posY(i);
+       j = j + 1;
+   end
+end
+globalPose
+
 %% 
 close all;
 clc;

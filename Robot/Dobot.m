@@ -14,7 +14,7 @@ classdef Dobot < handle
         armRadius; % Radius of the robot arm during movement
         qCompass; % Internal compass system used to drive to waypoints around the robot
         
-        logFile = SingleInstance.Logger;
+        %logFile = SingleInstance.Logger;
 
     end
     
