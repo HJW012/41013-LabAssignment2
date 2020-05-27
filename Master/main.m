@@ -1,13 +1,27 @@
-% Main Script
+%% Advanced Teach Demo
+close all;
+clear;
+clc;
 
-i = 1
-avgSize = 5;
+robot = Dobot();
+robot.GenerateLinearRail();
+robot.Display();
+camlight;
+axis equal;
 
-while(1)
-   if (i >= avgSize)
-      ave = sum / avgSize;
-      sum = 0;
-   else 
-       sum += msg;
-   end
-end
+robot.AdvancedTeach();
+%% 
+close all;
+clear all;
+clc;
+robot = Dobot();
+robot.Display();
+camlight;
+axis equal;
+
+q0 = robot.model.getpos;
+pose1 = transl(0.25, 0, 0.05) * troty(pi/2);
+q1 = robot.model.ikcon(pose1, q0);
+pause();
+robot.model.animate(q1);
+drawnow();
