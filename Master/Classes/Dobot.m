@@ -29,6 +29,8 @@ classdef Dobot < handle
         remoteControllerAttached = false;
         
         teachDistance = 0.2;
+        
+        linkLength = [0.135, 0.139, 0.16, 0.05, 0.0625];
     end
     
     methods
@@ -142,6 +144,55 @@ classdef Dobot < handle
                 self.linearRail.Display();
                 drawnow();
            end
+        end
+        %% Generate Target Joint Angles
+        function q = GenerateTargetJointAngles(self, targetPose)
+            targetX = targetPose(1, 4) - self.model.base(1, 4);
+            targetY = targetPose(2, 4) - self.model.base(2, 4);
+            targetZ = targetPose(3, 4) - self.model.base(3, 4);
+            theta = atan2(targetY, targetX) + -asin(self.model.base(1, 2));
+            q(1) = theta;
+            joint4X = targetX - self.linkLength(4) * cos(theta); % Get required joint 4 pose
+            joint4Y = targetY - self.linkLength(4) * sin(theta);
+            joint4Z = targetZ + self.linkLength(5);
+            h = joint4Z - self.linkLength(1);
+            
+            syms x y z q2 q3 a2 a3; % Symbolic algebraic solution to find q2
+            f1 = a2*sin(q2)+a3*cos(q3) == sqrt(x^2+y^2);
+            f2 = a2*cos(q2)-a3*sin(q3) == z;
+            solution = solve([f1,f2],[q2,q3]);
+            q2sym1 = (subs(solution.q2(1), {x, y, z, a2, a3}, {joint4X joint4Y h self.linkLength(2) self.linkLength(3)}));
+            q2sym2 = (subs(solution.q2(2), {x, y, z, a2, a3}, {joint4X joint4Y h self.linkLength(2) self.linkLength(3)}));
+            q21 = vpa(q2sym1)
+            q22 = vpa(q2sym2)
+
+            
+            if self.model.qlim(2, 1) <= q21 && q21 <= self.model.qlim(2, 2)
+               q(2) = q21;
+            elseif self.model.qlim(2, 1) <= q22 && q22 <= self.model.qlim(2, 2)
+               q(2) = q22;
+            end
+            
+            joint1X = self.model.base(1, 4);
+            joint1Y = self.model.base(2, 4);
+            joint1Z = self.linkLength(1);
+
+            l = sqrt( (joint4X)^2 + (joint4Y)^2 + (joint4Z-joint1Z)^2 );
+            sigma = acos((self.linkLength(2)^2 + self.linkLength(3)^2 - l^2)/(2 * self.linkLength(2) * self.linkLength(3)));
+            
+            q(3) = pi - sigma;
+            q(4) = pi/2 - (q(2) + q(3));
+            q(5) = acos(targetPose(1, 1));
+            
+            withinLimits = true;
+            for i = 1:5
+                if (q(i) > self.model.qlim(i, 2) || q(i) < self.model.qlim(i, 1))
+                   withinLimits = false;
+                end
+            end
+            if ~withinLimits
+                disp('Joint Angles Outside of Joint Limits');
+            end
         end
         %% Generate Linear Rail - does not display linear rail yet
         function GenerateLinearRail(self)
@@ -479,35 +530,22 @@ classdef Dobot < handle
                 'String', 'X');
             
 
-           % EE X Slider
-           uicontrol(panel2, 'Style', 'text', ...
-                    'Units', 'normalized', ...
-                    'BackgroundColor', bgcol, ...
-                    'Position', [0.05 0.525 0.06 0.1], ...
-                    'FontUnits', 'normalized', ...
-                    'FontSize', 0.5, ...
-                    'String','X');
-
-                % slider itself
-            handles.LRSlider = uicontrol(panel2, 'Style', 'slider', ...
-                    'Units', 'normalized', ...
-                    'Position', [0.1 0.55 0.3 0.1], ...
-                    'Min', 0, ...
-                    'Max', self.linearRailLength, ...
-                    'Value', self.linearRailTargetPose)
-                    
-
-             % text box showing slider value, also editable
-             handles.LRSliderEdit = uicontrol(panel2, 'Style', 'edit', ...
-                    'Units', 'normalized', ...
-                    'Position', [0.4 0.55 0.05 0.1], ...
-                    'BackgroundColor', bgcol, ...
-                    'String', num2str(self.linearRailTargetPose), ...
-                    'HorizontalAlignment', 'left', ...
-                    'FontUnits', 'normalized', ...
-                    'FontSize', 0.4)
+            
+            uicontrol(panel2, 'Style', 'pushbutton', ...
+                'Units', 'normalized', ...
+                'Position', [0.54 0.6 0.1 0.2], ...
+                'FontUnits', 'normalized', ...
+                'FontSize', 0.7, ...
+                'CallBack', @(src,event) self.X_callback('+', handles), ...
+                'BackgroundColor', 'white', ...
+                'ForegroundColor', 'red', ...
+                'String', 'X+');
+            
+           tempTarget = handles.robot.fkine(handles.robot.getpos);
+           
                 
             %EE Y Slider
+            handles.targetY = tempTarget(2, 4);
             uicontrol(panel2, 'Style', 'text', ...
                     'Units', 'normalized', ...
                     'BackgroundColor', bgcol, ...
@@ -517,25 +555,26 @@ classdef Dobot < handle
                     'String','Y');
 
                 % slider itself
-            handles.LRSlider = uicontrol(panel2, 'Style', 'slider', ...
+            handles.YSlider = uicontrol(panel2, 'Style', 'slider', ...
                     'Units', 'normalized', ...
                     'Position', [0.1 0.4 0.3 0.1], ...
-                    'Min', 0, ...
-                    'Max', self.linearRailLength, ...
-                    'Value', self.linearRailTargetPose)
+                    'Min', -5, ...
+                    'Max', 5, ...
+                    'Value', handles.targetY)
                     
 
              % text box showing slider value, also editable
-             handles.LRSliderEdit = uicontrol(panel2, 'Style', 'edit', ...
+             handles.YSliderEdit = uicontrol(panel2, 'Style', 'edit', ...
                     'Units', 'normalized', ...
                     'Position', [0.4 0.4 0.05 0.1], ...
                     'BackgroundColor', bgcol, ...
-                    'String', num2str(self.linearRailTargetPose), ...
+                    'String', num2str(handles.targetY), ...
                     'HorizontalAlignment', 'left', ...
                     'FontUnits', 'normalized', ...
                     'FontSize', 0.4)
                 
             %EE Z Slider
+            handles.targetZ = tempTarget(3, 4);
             uicontrol(panel2, 'Style', 'text', ...
                     'Units', 'normalized', ...
                     'BackgroundColor', bgcol, ...
@@ -545,25 +584,26 @@ classdef Dobot < handle
                     'String','Z');
 
                 % slider itself
-            handles.LRSlider = uicontrol(panel2, 'Style', 'slider', ...
+            handles.ZSlider = uicontrol(panel2, 'Style', 'slider', ...
                     'Units', 'normalized', ...
                     'Position', [0.1 0.25 0.3 0.1], ...
-                    'Min', 0, ...
-                    'Max', self.linearRailLength, ...
-                    'Value', self.linearRailTargetPose)
+                    'Min', -5, ...
+                    'Max', 5, ...
+                    'Value', handles.targetZ)
                     
 
              % text box showing slider value, also editable
-             handles.LRSliderEdit = uicontrol(panel2, 'Style', 'edit', ...
+             handles.ZSliderEdit = uicontrol(panel2, 'Style', 'edit', ...
                     'Units', 'normalized', ...
                     'Position', [0.4 0.25 0.05 0.1], ...
                     'BackgroundColor', bgcol, ...
-                    'String', num2str(self.linearRailTargetPose), ...
+                    'String', num2str(handles.targetZ), ...
                     'HorizontalAlignment', 'left', ...
                     'FontUnits', 'normalized', ...
                     'FontSize', 0.4)
                 
             %Linear Rail Slider
+            self.linearRailTargetPose = handles.robot.base(1, 4);
             uicontrol(panel2, 'Style', 'text', ...
                     'Units', 'normalized', ...
                     'BackgroundColor', bgcol, ...
@@ -634,6 +674,25 @@ classdef Dobot < handle
                     'Callback', @(src,event)self.advancedTeach_callback(src, self.model.name, j, handles));
             end
             
+                
+            set(handles.YSlider, ...
+                    'Interruptible', 'off', ...
+                    'BusyAction', 'queue', ...
+                    'Callback', @(src,event)self.Y_callback(src, self.model.name, handles.targetY, handles));
+            set(handles.YSliderEdit, ...
+                    'Interruptible', 'off', ...
+                    'BusyAction', 'queue', ...
+                    'Callback', @(src,event)self.Y_callback(src, self.model.name, handles.targetY, handles));
+                
+            set(handles.ZSlider, ...
+                    'Interruptible', 'off', ...
+                    'BusyAction', 'queue', ...
+                    'Callback', @(src,event)self.Z_callback(src, self.model.name, handles.targetZ, handles));
+            set(handles.ZSliderEdit, ...
+                    'Interruptible', 'off', ...
+                    'BusyAction', 'queue', ...
+                    'Callback', @(src,event)self.Z_callback(src, self.model.name, handles.targetZ, handles));
+            
             set(handles.LRSlider, ...
                     'Interruptible', 'off', ...
                     'BusyAction', 'queue', ...
@@ -642,6 +701,7 @@ classdef Dobot < handle
                     'Interruptible', 'off', ...
                     'BusyAction', 'queue', ...
                     'Callback', @(src,event)self.LR_callback(src, self.model.name, self.linearRailTargetPose, handles));
+                
         end
         %% 
         function advancedTeach_callback(self, src, name, j, handles)
@@ -728,8 +788,112 @@ classdef Dobot < handle
                     newval = str2double(get(src, 'String'));
                     set(handles.LRSlider, 'Value', newval);
             end
+
             self.MoveToTargetLinearRail(newval);
+            T6 = handles.robot.fkine(handles.robot.getpos);
+            for i=1:3
+                set(handles.t6.t(i), 'String', sprintf('%.3f', T6(i,4)));
+            end
         end
+        function X_callback(self, dir, handles)
+            T = self.model.fkine(self.model.getpos)
+            if strcmp(dir, '+')
+                T(1, 4) = T(1, 4) + 0.001
+            elseif strcmp(dir, '-')
+                
+            end
+
+            q = self.GenerateTargetJointAngles(T);
+            self.model.animate(q);
+            drawnow();
+            T6 = handles.robot.fkine(handles.robot.getpos);
+            switch handles.orientation
+                case 'approach'
+                    orient = T6(:,3);    % approach vector
+                case 'eul'
+                    orient = tr2eul(T6, 'setopt', handles.opt);
+                case'rpy'
+                    orient = tr2rpy(T6, 'setopt', handles.opt);
+            end
+
+            % update the display in the advancedTeach window
+            for i=1:3
+                set(handles.t6.t(i), 'String', sprintf('%.3f', T6(i,4)));
+                set(handles.t6.r(i), 'String', sprintf('%.3f', orient(i)));
+            end
+        end
+        
+        function Y_callback(self, src, name, j, handles)
+            switch get(src, 'Style')
+                case 'slider'
+                    % slider changed, get value and reflect it to edit box
+                    newval = get(src, 'Value');
+                    set(handles.YSliderEdit, 'String', num2str(newval));
+                case 'edit'
+                    % edit box changed, get value and reflect it to slider
+                    newval = str2double(get(src, 'String'));
+                    set(handles.YSlider, 'Value', newval);
+            end
+            
+            T = self.model.fkine(self.model.getpos);
+            T(2, 4) = newval;
+
+            q = self.GenerateTargetJointAngles(T);
+            self.model.animate(q);
+            drawnow();
+            T6 = handles.robot.fkine(handles.robot.getpos);
+            switch handles.orientation
+                case 'approach'
+                    orient = T6(:,3);    % approach vector
+                case 'eul'
+                    orient = tr2eul(T6, 'setopt', handles.opt);
+                case'rpy'
+                    orient = tr2rpy(T6, 'setopt', handles.opt);
+            end
+
+            % update the display in the advancedTeach window
+            for i=1:3
+                set(handles.t6.t(i), 'String', sprintf('%.3f', T6(i,4)));
+                set(handles.t6.r(i), 'String', sprintf('%.3f', orient(i)));
+            end
+        end
+        
+        function Z_callback(self, src, name, j, handles)
+            switch get(src, 'Style')
+                case 'slider'
+                    % slider changed, get value and reflect it to edit box
+                    newval = get(src, 'Value');
+                    set(handles.ZSliderEdit, 'String', num2str(newval));
+                case 'edit'
+                    % edit box changed, get value and reflect it to slider
+                    newval = str2double(get(src, 'String'));
+                    set(handles.ZSlider, 'Value', newval);
+            end
+            
+            T = self.model.fkine(self.model.getpos);
+            T(3, 4) = newval;
+
+            q = self.GenerateTargetJointAngles(T);
+            self.model.animate(q);
+            drawnow();
+            T6 = handles.robot.fkine(handles.robot.getpos);
+            switch handles.orientation
+                case 'approach'
+                    orient = T6(:,3);    % approach vector
+                case 'eul'
+                    orient = tr2eul(T6, 'setopt', handles.opt);
+                case'rpy'
+                    orient = tr2rpy(T6, 'setopt', handles.opt);
+            end
+
+            % update the display in the advancedTeach window
+            for i=1:3
+                set(handles.t6.t(i), 'String', sprintf('%.3f', T6(i,4)));
+                set(handles.t6.r(i), 'String', sprintf('%.3f', orient(i)));
+            end
+        end
+        
+        
 
         function record_callback(self, robot, handles)
 

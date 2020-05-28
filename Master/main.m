@@ -12,7 +12,7 @@ axis equal;
 robot.AdvancedTeach();
 %% 
 close all;
-clear all;
+clear;
 clc;
 robot = Dobot();
 robot.Display();
@@ -20,8 +20,29 @@ camlight;
 axis equal;
 
 q0 = robot.model.getpos;
-pose1 = transl(0.25, 0, 0.05) * troty(pi/2);
-q1 = robot.model.ikcon(pose1, q0);
+EEPose0 = robot.model.fkine(q0);
+
+EEPose1 = transl(0.2, 0, 0);
+q1 = robot.GenerateTargetJointAngles(EEPose1)
+steps = 50;
+s = lspb(0,1,steps);
+qMatrix = nan(steps,5);
+
+
+for i = 1:steps
+    qMatrix(i,:) = (1-s(i))*q0 + s(i)*q1;
+end
+
 pause();
-robot.model.animate(q1);
-drawnow();
+for i = 1:steps
+   robot.model.animate(qMatrix(i, :));
+   drawnow();
+end
+
+%% Classes
+% Dobot
+% Object
+% Camera
+% Environment
+% GlobalController
+
