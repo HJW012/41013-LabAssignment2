@@ -10,9 +10,13 @@ classdef EnvironmentObject < handle
        modelF;
        modelV;
        modelData;
+       modelMidPoint;
        vertexColours;
        vertexCount;
        translate;
+       generalColour;
+       cameraPlot;
+       cameraK;
    end
    
    methods
@@ -25,6 +29,9 @@ classdef EnvironmentObject < handle
                       [self.modelF, self.modelV, self.modelData] = plyread(varargin{i+1}, "tri");
                       self.vertexColours = [self.modelData.vertex.red, self.modelData.vertex.green, self.modelData.vertex.blue] / 255;
                       self.vertexCount = size(self.modelV, 1);
+                      self.modelMidPoint = sum(self.modelV)/self.vertexCount;
+                      self.modelV = self.modelV-repmat(self.modelMidPoint, self.vertexCount, 1);
+                      
                       knownParam = 1;
                   end
                   
@@ -40,6 +47,11 @@ classdef EnvironmentObject < handle
                   
                   if strcmp(varargin{i}, 'Dimensions')
                       self.dimensions = varargin{i+1};
+                     knownParam = 1; 
+                  end
+                  
+                  if strcmp(varargin{i}, 'GeneralColour')
+                      self.generalColour = varargin{i+1};
                      knownParam = 1; 
                   end
                   

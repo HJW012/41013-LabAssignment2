@@ -1,69 +1,42 @@
 %% Object class
-classdef EnvironmentObject < handle
+classdef GlobalController < handle
    properties
-       type; %foundation, target1, target2, target3, deposit, misc
-       pose;      
-       dimensions; %length, width, height - probably hardcoded for simplicity's sake
-       graspState = false;
-       grabRobot;
-       modelMesh;
-       modelF;
-       modelV;
-       modelData;
-       vertexColours;
-       vertexCount;
-       translate;
+       environment;
+       depositLocations;
+       redTargetLocations;
+       greenTargetLocations;
+       blueTargetLocations;
+       robot;
    end
    
    methods
-       function self = EnvironmentObject(varargin)  
-           if 0 < nargin && mod(nargin, 2) == 0
-              for i = 1:2:nargin
-                  knownParam = 0;
-                  
-                  if strcmp(varargin{i}, 'ModelPath')
-                      [self.modelF, self.modelV, self.modelData] = plyread(varargin{i+1}, "tri");
-                      self.vertexColours = [self.modelData.vertex.red, self.modelData.vertex.green, self.modelData.vertex.blue] / 255;
-                      self.vertexCount = size(self.modelV, 1);
-                      knownParam = 1;
-                  end
-                  
-                  if strcmp(varargin{i}, 'Pose')
-                      self.pose = varargin{i+1};
-                      knownParam = 1;
-                  end
-                  
-                  if strcmp(varargin{i}, 'Type')
-                      self.type = varargin{i+1};                      
-                      knownParam = 1;
-                  end
-                  
-                  if strcmp(varargin{i}, 'Dimensions')
-                      self.dimensions = varargin{i+1};
-                     knownParam = 1; 
-                  end
-                  
-                  if knownParam == 0
-                     warning("Unknown Param: " + varargin{i+1});
-                  end
-              end
-              
-           else
-               warning("Warning - Object Class: Too Few Inputs");
-           end
+       function self = GlobalController()  
+           
        end
-       %% Display object in environment
-       function Display(self)
-           self.modelMesh = trisurf(self.modelF,self.modelV(:,1)+ self.pose(1,4),self.modelV(:,2) + self.pose(2,4), self.modelV(:,3) + self.pose(3,4) ...
-                        ,'FaceVertexCData',self.vertexColours,'EdgeColor','interp','EdgeLighting','flat');
-           self.SetPose(self.pose);
-           drawnow();
+       %% Add Environment
+       function AddEnvironment(self, environment)
+           self.environment = environment;
        end
-       %% Set Pose - move object to new pose and display
-       function SetPose(self, pose)
-           self.pose = pose;
-           updatedPoints = [self.pose * [self.modelV, ones(self.vertexCount, 1)]']';
-           self.modelMesh.Vertices = updatedPoints(:, 1:3);
+       %% Add Robot
+       function AddRobot(self, robot)
+          self.robot(numel(self.robot)+1) = robot; 
+       end
+       %% Run Simulation
+       function Run(self)
+           
+       end
+       %% Initialise Simulation
+       function Init(self)
+           % Add Robot
+           self.environment.AddRobot(self.robot(1));
+           
+           % Add Object
+           self.environment.AddObject
+           
+       end
+       %% Init Environment
+       function InitEnvironment(self)
+           
        end
    end
 end

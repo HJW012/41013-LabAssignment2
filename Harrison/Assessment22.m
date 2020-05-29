@@ -6,26 +6,27 @@ clear;
 fig1 = figure(1);
 hold on;
 
-table = Objects('table.ply', [0 0 0], 0.8911);
+%table = Objects('table.ply', [0 0 0], 0.8911);
 
-yellowCrate = Objects('yellowCrate.ply', [-0.75 -0.25 0.8911], 0.0664);
+%yellowCrate = Objects('yellowCrate.ply', [-0.75 -0.25 0.8911], 0.0664);
     
-blueCrate = Objects('blueCrate.ply', [-0.75 0 0.8911], 0.0664);
+%blueCrate = Objects('blueCrate.ply', [-0.75 0 0.8911], 0.0664);
+blueCrate = EnvironmentObject('ModelPath', 'blueCrate.ply', 'Pose', transl(-0.75, 0, 0.8911), 'Dimensions', [0 0 0.0664], 'GeneralColour', 'b');
 
-redCrate = Objects('redCrate.ply', [-0.75 0.25 0.8911], 0.0664);
+%redCrate = Objects('redCrate.ply', [-0.75 0.25 0.8911], 0.0664);
 
-redPen = Objects('redPen.ply', [0.75 0.35 0.8911], 0.0664);
+%redPen = Objects('redPen.ply', [0.75 0.35 0.8911], 0.0664);
 
-bluePen = Objects('bluePen.ply', [0.15 -0.1 0.8911], 0.0664);
+%bluePen = Objects('bluePen.ply', [0.15 -0.1 0.8911], 0.0664);
 
-pencil1 = Objects('pencil.ply', [0.3 0.2 0.8911], 0.0664);
+%pencil1 = Objects('pencil.ply', [0.3 0.2 0.8911], 0.0664);
 
-pencil2 = Objects('pencil.ply', [0 -0.3 0.8911], 0.0664);
+%pencil2 = Objects('pencil.ply', [0 -0.3 0.8911], 0.0664);
     
-Dobot_1 = Dobot([0,0,0.8911]);
-animate(Dobot_1.model, deg2rad([45, 27, 64, -70, 0]));
+%Dobot_1 = Dobot([0,0,0.8911]);
+%animate(Dobot_1.model, deg2rad([45, 27, 64, -70, 0]));
 
-redPen.TransformObject(transl(0.75, 0.35, 0.8911) * trotz(deg2rad(-70)));
+%redPen.TransformObject(transl(0.75, 0.35, 0.8911) * trotz(deg2rad(-70)));
 
 % Build Camera
 cam = CentralCamera('focal', 0.08, 'pixel', 10e-5, ...
@@ -39,14 +40,17 @@ cam.T = Tc0;
 cam.plot_camera('Tcam',Tc0,'scale',0.15);
 % this is the 'external' view of the camera
 %tablePlot = cam.plot(table.verts', 'Tobj', table.pose, 'MarkerSize', 1, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', 'g');
-yellowCratePlot = cam.plot(yellowCrate.verts', 'Tobj', yellowCrate.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', 'g');
-blueCratePlot = cam.plot(blueCrate.verts', 'Tobj', blueCrate.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b');
-redCratePlot = cam.plot(redCrate.verts', 'Tobj', redCrate.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r');
 
-redPenPlot = cam.plot(redPen.verts', 'Tobj', redPen.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r');
-bluePenPlot = cam.plot(bluePen.verts', 'Tobj', bluePen.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b');
-pencil1Plot = cam.plot(pencil1.verts', 'Tobj', pencil1.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', 'g');
-pencil2Plot = cam.plot(pencil2.verts', 'Tobj', pencil2.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', 'g');
+
+%yellowCratePlot = cam.plot(yellowCrate.verts', 'Tobj', yellowCrate.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', 'g');
+blueCratePlot = cam.plot(blueCrate.modelV', 'Tobj', blueCrate.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b');
+
+%redCratePlot = cam.plot(redCrate.verts', 'Tobj', redCrate.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r');
+
+%redPenPlot = cam.plot(redPen.verts', 'Tobj', redPen.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r');
+%bluePenPlot = cam.plot(bluePen.verts', 'Tobj', bluePen.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'b', 'MarkerFaceColor', 'b');
+%pencil1Plot = cam.plot(pencil1.verts', 'Tobj', pencil1.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', 'g');
+%pencil2Plot = cam.plot(pencil2.verts', 'Tobj', pencil2.pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', 'g');
 
 fig2 = cam.figure();
 set(fig2, 'Resize', 'off'); %Prevent resizing of cam figure impossible - might get rid of this
@@ -56,22 +60,22 @@ set(fig2, 'CurrentAxes', fig2Axes);
 hold on;
 cam.hold();
 %tableK = convhull(tablePlot');
-yellowCrateK = convhull(yellowCratePlot');
+%yellowCrateK = convhull(yellowCratePlot');
 blueCrateK = convhull(blueCratePlot');
-redCrateK = convhull(redCratePlot');
-redPenK = convhull(redPenPlot');
-bluePenK = convhull(bluePenPlot');
-pencil1K = convhull(pencil1Plot');
-pencil2K = convhull(pencil2Plot');
+%redCrateK = convhull(redCratePlot');
+%redPenK = convhull(redPenPlot');
+%bluePenK = convhull(bluePenPlot');
+%pencil1K = convhull(pencil1Plot');
+%pencil2K = convhull(pencil2Plot');
 
 %patch(fig2Axes, tablePlot(1, tableK), tablePlot(2, tableK), 'r');
-patch(fig2Axes, yellowCratePlot(1, yellowCrateK), yellowCratePlot(2, yellowCrateK), 'g');
+%patch(fig2Axes, yellowCratePlot(1, yellowCrateK), yellowCratePlot(2, yellowCrateK), 'g');
 patch(fig2Axes, blueCratePlot(1, blueCrateK), blueCratePlot(2, blueCrateK), 'b');
-patch(fig2Axes, redCratePlot(1, redCrateK), redCratePlot(2, redCrateK), 'r');
-patch(fig2Axes, redPenPlot(1, redPenK), redPenPlot(2, redPenK), 'r');
-patch(fig2Axes, bluePenPlot(1, bluePenK), bluePenPlot(2, bluePenK), 'b');
-patch(fig2Axes, pencil1Plot(1, pencil1K), pencil1Plot(2, pencil1K), 'g');
-patch(fig2Axes, pencil2Plot(1, pencil2K), pencil2Plot(2, pencil2K), 'g');
+%patch(fig2Axes, redCratePlot(1, redCrateK), redCratePlot(2, redCrateK), 'r');
+%patch(fig2Axes, redPenPlot(1, redPenK), redPenPlot(2, redPenK), 'r');
+%patch(fig2Axes, bluePenPlot(1, bluePenK), bluePenPlot(2, bluePenK), 'b');
+%patch(fig2Axes, pencil1Plot(1, pencil1K), pencil1Plot(2, pencil1K), 'g');
+%patch(fig2Axes, pencil2Plot(1, pencil2K), pencil2Plot(2, pencil2K), 'g');
 
 %set(fig2Axes, 'visible', 'off');
 
