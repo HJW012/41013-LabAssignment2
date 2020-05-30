@@ -4,7 +4,7 @@ clear;
 clc;
 
 robot = Dobot();
-robot.GenerateLinearRail([0,0,0]);
+robot.GenerateLinearRail([0,0,0);
 robot.Display();
 camlight;
 axis equal;

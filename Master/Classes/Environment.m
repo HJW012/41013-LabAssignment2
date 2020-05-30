@@ -59,7 +59,7 @@ classdef Environment < handle
                self.deposit{i}.Display();
            end
            
-           self.robot.PlotAndColourRobot();
+           self.robot.Display();
            
            axis equal;
            camlight;

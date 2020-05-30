@@ -195,7 +195,8 @@ classdef Dobot < handle
             end
         end
         %% Generate Linear Rail - does not display linear rail yet
-        function GenerateLinearRail(self)
+        function GenerateLinearRail(self, linearRailPose)
+           self.linearRailPose = eye(4) * transl(linearRailPose);
            self.linearRail = EnvironmentObject('ModelPath', 'LinearRail.ply', 'Pose', self.linearRailPose, 'Dimensions', [0 0 0.051]);
            self.basePose = transl(self.linearRailPose(1, 4)+self.baseWidth/2, self.linearRailPose(2, 4), self.linearRailPose(3, 4) + self.linearRail.dimensions(3));
            self.model.base = self.basePose;

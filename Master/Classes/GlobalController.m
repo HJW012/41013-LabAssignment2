@@ -18,10 +18,10 @@ classdef GlobalController < handle
            self.environment = environment;
            
        end
-       %% Add Robot
-       function AddRobot(self, robot)
-          self.robot(numel(self.robot)+1) = robot; 
-       end
+%        %% Add Robot
+%        function AddRobot(self, robot)
+%           self.robot(numel(self.robot)+1) = robot; 
+%        end
        %% Run Simulation
        function Run(self)
            % Calculate deposit locations
@@ -45,8 +45,7 @@ classdef GlobalController < handle
        end
        %% Init Environment
        function InitEnvironment(self)
-           newEnvironment = Environment();
-           self.AddEnvironment(newEnvironment);
+           self.AddEnvironment(Environment());
            
            blueCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'blueCrate.ply', 'Pose', transl(-0.75, 0.35, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'b');
            self.environment.AddObject(blueCrate);
@@ -72,8 +71,9 @@ classdef GlobalController < handle
            table = EnvironmentObject('Type', 'foundation', 'ModelPath', 'table.ply', 'Pose', transl(0, 0, 0), 'Dimensions', [2.1956 1.0097 0.8911], 'GeneralColour', 'r');
            self.environment.AddObject(table);
            
-           newRobot = Dobot('BasePose', eye(4)* transl(0,0,table.dimensions(1,3)));
+           newRobot = Dobot('BasePose', eye(4)*transl(0,0,table.dimensions(1,3)));
            self.environment.AddRobot(newRobot);
+           self.environment.robot.GenerateLinearRail([0,0,0.8911]);
            
            self.environment.Display();
 
