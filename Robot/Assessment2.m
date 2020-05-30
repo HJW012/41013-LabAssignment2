@@ -96,10 +96,11 @@ L4 = Link('d',0,'a',0.05,'alpha',-pi/2,'qlim', deg2rad([-90,90]), 'offset', 0);
 L5 = Link('d',0.025,'a',0,'alpha',0,'qlim', deg2rad([-85,85]), 'offset', 0);
 
 Dobot_1 = SerialLink([L1 L2 L3 L4 L5],'name', 'MyDobot');
-workspace = [-1 1 -1 1 0 1]; 
+workspace = [-1 1 -0.4 0.4 0 1]; 
 scale = 0.5;        
 q = deg2rad([45, 27, 64, -70, 0]);     
 Dobot_1.plot(q,'workspace',workspace,'scale',scale);
+%Dobot_1.base = eye(4) * transl(1, 0.5, 0.8911);
 
 centrePoint = [0,0,0];
 
@@ -126,6 +127,7 @@ Dobot_1.plot3d(deg2rad([45, 27, 64, -70, 0]));
 %Dobot_1.teach();
 
 hold on;
+axis equal;
 
 % One side of the cube
 [Y,Z] = meshgrid(-0.1:0.01:0.1,-0.1:0.01:0.1);
