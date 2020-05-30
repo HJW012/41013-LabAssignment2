@@ -14,8 +14,8 @@ classdef RGBCamera < handle
        object = EnvironmentObject.empty;
        objectPlot;
        mesh = [];
-       fig = figure().empty;
-       figAxes = axes().empty;
+       fig = figure();
+       figAxes = axes();
        blobPerimeters;
        blobCentroids;
        blobOrientations;

@@ -2,7 +2,11 @@
 classdef Environment < handle
    properties
        foundation;
-       robots = [];
+       targets;
+       deposit;
+       targetIndex = 1;
+       depositIndex = 1;
+       robot;
    end
    
    methods 
@@ -21,7 +25,8 @@ classdef Environment < handle
            end
            
            if strcmp(object.type, 'deposit')
-               self.deposit = object;
+               self.deposit{1, self.depositIndex} = object;
+               self.depositIndex = self.depositIndex + 1;
            end
            
            if strcmp(object.type, 'misc') 
@@ -31,12 +36,30 @@ classdef Environment < handle
        end
        %% Add Robot
        function AddRobot(self, robot)
-           self.robotControllers{1, self.robotControllerIndex} = robotController;
-           self.robotControllerIndex = self.robotControllerIndex + 1;
+           %self.robot(numel(self.robot)+1) = robot;
+           self.robot = robot;
+           
+           
+           %self.robotControllers{1, self.robotControllerIndex} = robotController;
+           %self.robotControllerIndex = self.robotControllerIndex + 1;
        end
        %% Display Environment - only run once!
-       function Display(self)   
+       function Display(self)         
+           for i = 1:size(self.foundation,2)
+               self.foundation(i).Display();
+           end
            
+           hold on;
+           
+           for i = 1:size(self.targets,2)
+               self.targets{i}.Display();
+           end
+           
+           for i = 1:size(self.deposit,2)
+               self.deposit{i}.Display();
+           end
+           
+           self.robot.PlotAndColourRobot();
            
            axis equal;
            camlight;
