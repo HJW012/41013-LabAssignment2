@@ -11,6 +11,10 @@ classdef Environment < handle
    
    methods 
        function self = Environment(varargin)
+           for i = 1:1:nargin
+               object = varargin{i};
+               self.AddObject(object);
+           end
            
        end
        %% Add generic object
