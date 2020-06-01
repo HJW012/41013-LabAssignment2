@@ -31,6 +31,10 @@ classdef Dobot < handle
         teachDistance = 0.2;
         
         linkLength = [0.135, 0.139, 0.16, 0.05, 0.0625];
+        
+        stop = false;
+        
+        
     end
     
     methods
@@ -71,7 +75,7 @@ classdef Dobot < handle
             self.model.base = self.basePose;            
         end
 
-        %% GetUR3Robot
+        %% GetDobotRobot
         % Create and return a Dobot robot model
         function GetDobotRobot(self)
             pause(0.001);
@@ -149,12 +153,12 @@ classdef Dobot < handle
         function q = GenerateTargetJointAngles(self, targetPose)
             targetX = targetPose(1, 4) - self.model.base(1, 4);
             targetY = targetPose(2, 4) - self.model.base(2, 4);
-            targetZ = targetPose(3, 4) - self.model.base(3, 4);
+            targetZ = self.model.base(3, 4) - targetPose(3, 4);
             theta = atan2(targetY, targetX) + -asin(self.model.base(1, 2));
             q(1) = theta;
-            joint4X = targetX - self.linkLength(4) * cos(theta); % Get required joint 4 pose
-            joint4Y = targetY - self.linkLength(4) * sin(theta);
-            joint4Z = targetZ + self.linkLength(5);
+            joint4X = targetX - self.linkLength(4) * cos(theta) % Get required joint 4 pose
+            joint4Y = targetY - self.linkLength(4) * sin(theta)
+            joint4Z = targetZ + self.linkLength(5)
             h = joint4Z - self.linkLength(1);
             
             syms x y z q2 q3 a2 a3; % Symbolic algebraic solution to find q2
@@ -168,9 +172,9 @@ classdef Dobot < handle
 
             
             if self.model.qlim(2, 1) <= q21 && q21 <= self.model.qlim(2, 2)
-               q(2) = q21;
+               q(2) = q21
             elseif self.model.qlim(2, 1) <= q22 && q22 <= self.model.qlim(2, 2)
-               q(2) = q22;
+               q(2) = q22
             end
             
             joint1X = self.model.base(1, 4);
@@ -222,30 +226,49 @@ classdef Dobot < handle
         %% Move linear rail to target location
         function MoveToTargetLinearRail(self, x)
             disp("X is : " + x);
+            steps = 50;
+
            if (x - self.baseWidth/2 >= 0 && x + self.baseWidth/2 <= self.linearRailLength)
-              self.model.base(1, 4) = self.linearRailPose(1, 4) + x;
-               self.model.animate(self.model.getpos);
-               disp(1);
+              distance = x - self.model.base(1,4);
+              increment = distance/steps;
+              for i = 1:steps
+                  self.model.base(1, 4) = self.model.base(1,4) + increment;
+                  self.model.animate(self.model.getpos);
+                  drawnow();
+              end
+              disp(1);
            end
            
            if (x - self.baseWidth/2 < 0)
-              self.model.base(1, 4) = self.linearRailPose(1, 4) + self.baseWidth/2;
-              self.model.animate(self.model.getpos);
+              distance = (self.linearRailPose(1, 4) + self.baseWidth/2) - self.model.base(1,4);
+              increment = distance/steps;
+              
+              for i = 1:steps
+                  self.model.base(1, 4) = self.model.base(1,4) + increment;
+                  self.model.animate(self.model.getpos);
+                  drawnow();
+              end
               disp(2);
            end
            
            if (x > self.linearRailLength - self.baseWidth/2)
-               self.model.base(1, 4) = self.linearRailPose(1, 4) + self.linearRailTravelDist + self.baseWidth/2;
-               self.model.animate(self.model.getpos);
-               disp(3);
+              distance = (self.linearRailPose(1, 4) + self.linearRailTravelDist + self.baseWidth/2) - self.model.base(1,4);
+              increment = distance/steps;
+              
+              for i = 1:steps
+                  self.model.base(1, 4) = self.model.base(1,4) + increment;
+                  self.model.animate(self.model.getpos);
+                  drawnow();
+              end
+              disp(3);
            end
         end
         %% Move Arm
         function MoveArm(self, targetPose)
-            q0 = self.model.getpos;
+            q0 = self.model.getpos
 
-            EEPose1 = targetPose;
-            q1 = self.GenerateTargetJointAngles(EEPose1);
+            EEPose1 = targetPose
+            q1 = self.GenerateTargetJointAngles(EEPose1)
             steps = 50;
             s = lspb(0,1,steps);
             qMatrix = nan(steps,5);
@@ -255,7 +278,7 @@ classdef Dobot < handle
             end
 
             for i = 1:steps
-               robot.model.animate(qMatrix(i, :));
+               self.model.animate(qMatrix(i, :));
                drawnow();
             end
         end

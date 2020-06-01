@@ -48,7 +48,6 @@ classdef GlobalController < handle
            
  
            
-           
            % Drive to pick up location on linear slide
            for i = 1:1:size(self.redTargetLocations, 3)
                targetPosition = self.redTargetLocations(1,4,i);
@@ -65,48 +64,12 @@ classdef GlobalController < handle
                targetPosition = self.depositLocations(1,1);
                self.environment.robot.MoveToTargetLinearRail(targetPosition);
 
-               % Drop object
-               
-               
-           end
-           
-           for i = 1:1:size(self.greenTargetLocations, 3)
-               targetPosition = self.greenTargetLocations(1,4,i);
-               self.environment.robot.MoveToTargetLinearRail(targetPosition);
-               
-               % Collect Object
-               targetPose = self.greenTargetLocations(:,:,i);
-               self.environment.robot.MoveArm(targetPose * trotz(pi/2));
-               
-               pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
-               
-               % Return to deposit location
-               self.environment.robot.MoveArm(self.environment.robot.model.fkine(self.environment.robot.jointAngles));
-               targetPosition = self.depositLocations(1,1);
-               self.environment.robot.MoveToTargetLinearRail(targetPosition);
-
-               % Drop object
-           end
-           
-           for i = 1:1:size(self.blueTargetLocations, 3)
-               targetPosition = self.blueTargetLocations(1,4,i);
-               self.environment.robot.MoveToTargetLinearRail(targetPosition);
-               
-               % Collect Object
-               targetPose = self.blueTargetLocations(:,:,i);
-               self.environment.robot.MoveArm(targetPose * trotz(pi/2));
-               
-               pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
-               
-               % Return to deposit location
-               self.environment.robot.MoveArm(self.environment.robot.model.fkine(self.environment.robot.jointAngles));
-               targetPosition = self.depositLocations(1,1);
-               self.environment.robot.MoveToTargetLinearRail(targetPosition);
-
-               % Drop object
+                
            end
                       
+           % Drop object
            
+           % Loop until all objects have been collected
        end
        %% Initialise Simulation
        % Display the environment and calculate all the necessary target and
@@ -122,6 +85,8 @@ classdef GlobalController < handle
            for i = 1:size(self.environment.deposit,2)
                self.camera.AddObject(self.environment.deposit{i});
            end
+           
+
            
        end
        %% Init Environment

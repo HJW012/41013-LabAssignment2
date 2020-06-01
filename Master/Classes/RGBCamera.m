@@ -22,6 +22,7 @@ classdef RGBCamera < handle
        blobBB;
        mappedCentroids;
        globalCentroids;
+       globalOrientations;
        
        im;
        BWim;
@@ -79,7 +80,7 @@ classdef RGBCamera < handle
             end 
             
             self.cam = CentralCamera('focal', self.focal, 'pixel', self.pixel, 'resolution', self.resolution, 'centre', self.centre, 'name', self.name);
-            self.cam.T = self.centrePose
+            self.cam.T = self.centrePose;
             self.camHeight = self.centrePose(3, 4) - 0.8911; %z - table height
        end
        %% Display Camera in environment
@@ -181,22 +182,24 @@ classdef RGBCamera < handle
        
            posX = self.cam.T(1, 4) - ((self.mappedCentroids(:, 1) - self.cam.pp(1)) * self.camHeight) / (10000 * self.cam.f);
            posY = self.cam.T(2, 4) - ((self.mappedCentroids(:, 2) - self.cam.pp(2)) * self.camHeight) / (10000 * self.cam.f);
-           pixelColours = impixel(self.im, self.blobCentroids(:, 1), self.blobCentroids(:, 2))
+           pixelColours = impixel(self.im, self.blobCentroids(:, 1), self.blobCentroids(:, 2));
            [numRows numCols] = size(pixelColours);
            
            j = 1;
            for i = 1:numRows
                avg =  (pixelColours(i, 1) + pixelColours(i, 2) + pixelColours(i, 3)) / 3;
                if (avg < 200 && avg > 25 && self.blobPerimeters(i) < 300 && self.mappedCentroids(i, 1) > 0 && self.mappedCentroids(i, 2) > 0)
-                   self.blobBB(i)
+                   self.blobBB(i);
                    self.globalCentroids(j, 1) = posX(i);
-                   self.globalCentroids(j, 2) = posY(i);
+                   self.globalCentroids(j, 2) = -1*posY(i);
+                   self.globalOrientations(j) = self.blobOrientations(i);
                    j = j + 1;
                end
            end
        end
        %% Detect Centroids
        function LocateObjects(self)
+           self.PlotObjects();
            self.ConvertImage();
            self.CalcBlobs();
            self.MapCentroids();
