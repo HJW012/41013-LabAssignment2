@@ -198,6 +198,138 @@ classdef Dobot < handle
                 disp('Joint Angles Outside of Joint Limits');
             end
         end
+        %% Generate Target Joint Angles 2 - Using personal calculations - may only work with base facing in positive X direction
+        function q = GenerateTargetJointAngles2(self, basePose, targetPose)
+            targetX = targetPose(1, 4);
+            targetY = targetPose(2, 4);
+            targetZ = targetPose(3, 4);
+            baseX = basePose(1, 4);
+            baseY = basePose(2, 4);
+            baseZ = basePose(3, 4);
+            
+            % 1.0 - Determining q1
+            theta = atan(abs((targetY - baseY)/(targetX - baseX)));
+            
+            % 1.1 - Case 1 - Target greater in X and Y
+            if targetX > baseX && targetY > baseY
+                J4x = targetX - self.linkLength(4) * cos(theta);
+                J4y = targetY - self.linkLength(4) * sin(theta);
+                q(1) = theta;
+                
+                disp("Case 1.1");
+            end
+            
+            % 1.2 - Case 2 - Target greater in Y and lesser in X
+            if targetX < baseX && targetY > baseY
+                J4x = targetX + self.linkLength(4) * cos(theta);
+                J4y = targetY - self.linkLength(4) * sin(theta);
+                q(1) = theta + pi/2;
+                
+                disp("Case 1.2");
+            end
+            
+            % 1.3 - Case 3 - Target lesser in X and Y
+            if targetX < baseX && targetY < baseY
+                J4x = targetX + self.linkLength(4) * cos(theta);
+                J4y = targetY + self.linkLength(4) * sin(theta);
+                q(1) = -pi/2 - theta;
+                
+                disp("Case 1.3");
+            end
+            
+            % 1.4 - Case 4 - Target greater in X and lesser in Y
+            if targetX > baseX && targetY < baseY
+                J4x = targetX - self.linkLength(4) * cos(theta);
+                J4y = targetY + self.linkLength(4) * sin(theta);
+                q(1) = -theta;
+                
+                disp("Case 1.4");
+            end
+            
+            % 1.5 - Case 5 - Target equal in X and lesser in Y
+            if targetX == baseX && targetY < baseY
+                q(1) = -pi/2;
+                J4x = targetX;
+                J4y = targetY + self.linkLength(4);
+                
+                disp("Case 1.5");
+            end
+            
+            % 1.6 - Case 6 - Target equal in X and greater in Y
+            if targetX == baseX && targetY > baseY
+                q(1) = pi/2;
+                J4x = targetX
+                J4y = targetY - self.linkLength(4)
+                
+                disp("Case 1.6");
+            end
+            
+            % 1.7 - Case 7 - Target lesser in X and equal in Y
+            if targetX < baseX && targetY == baseY
+                q(1) = pi;
+                J4x = targetX + self.linkLength(4);
+                J4y = targetY;
+                
+                disp("Case 1.7");
+            end
+            
+            % 1.8 - Case 8 - Target greater in X and equal in Y
+            if targetX > baseX && targetY == baseY
+                q(1) = 0;
+                J4x = targetX - self.linkLength(4);
+                J4y = targetY;
+                
+                disp("Case 1.8");
+            end
+            
+            J4z = targetZ + self.linkLength(5)
+            
+            % 2.0 - Determine remaining joint angles
+            J2x = baseX
+            J2y = baseY
+            J2z = baseZ + self.linkLength(1)
+            length = abs(sqrt( (J2x - J4x)^2 + (J2y - J4y)^2 + (J2z - J4z)^2 ))
+            alpha = acos( ((self.linkLength(2))^2 + (self.linkLength(3))^2 + length^2) / 2 * self.linkLength(2) * self.linkLength(3) )
+            gamma = acos( ((self.linkLength(2))^2 + (length)^2 - (self.linkLength(3))^2)/(2 * self.linkLength(2) * length) );
+            h = abs(J4z - J2z)
+            
+            % 2.1 - Joint 4 Z greater than Joint 2 Z
+            if J4z > J2z
+                tempZ = J4z - h;
+                length2 = sqrt((J2x - J4x)^2 + (J2y - J4y)^2 + (J2z - tempZ)^2);
+                delta = atan(length2, h);
+                q(2) = pi - pi/2 - delta - gamma;
+                
+                
+                
+                disp("Case 2.1");
+            end
+            
+            % 2.2 - Joint 4 Z lower than Joint 2 Z
+            if J4z < J2z
+                tempZ = J4z - h;
+                length2 = sqrt((J2x - J4x)^2 + (J2y - J4y)^2 + (J2z - tempZ)^2)
+                delta = atan2(length2, h);
+                q(2) = pi - delta - gamma;
+                length * sin(delta)
+                disp("Case 2.2");
+            end
+            
+            % 2.3 - Joint 4 Z equal to Joint 2 Z
+            if J4z == J2z
+                q(2) = pi - pi/2 - gamma;
+                
+                disp("Case 2.3");
+            end
+            
+            
+            q(3) = pi - alpha;
+            sigma = q(2) + q(3);
+            q(4) = -(sigma - pi/2);
+            
+            %NEED TO HANDLE q5
+            q(5) = 0;
+        end
         %% Generate Linear Rail - does not display linear rail yet
         function GenerateLinearRail(self, linearRailPose)
            self.linearRailPose = eye(4) * transl(linearRailPose);
@@ -262,12 +394,50 @@ classdef Dobot < handle
               disp(3);
            end
         end
+        %% MoveToTargetLinearRail2 - receives pose and chooses optimal point of on linear rail to move to
+        function MoveToTargetLinearRail2(self, targetPose)
+            LRBasePose = self.linearRail.pose;
+            minLRX = LRBasePose(1, 4) + self.baseWidth/2;
+            maxLRX = LRBasePose(1, 4) + self.linearRailTravelDist - self.baseWidth/2;
+            targetX = targetPose(1, 4);
+            targetY = targetPose(2, 4);
+            targetZ = targetPose(3, 4);
+            baseX = self.model.base(1, 4);
+            baseY = self.model.base(2, 4);
+            baseZ = self.model.base(3, 4);
+            
+            if (targetX < minLRX)
+                possibleBaseX = minLRX;
+            elseif (targetX > maxLRX)
+                possibleBaseX = maxLRX;
+            else
+                possibleBaseX = targetX;
+            end
+            
+            possibleBase = transl(possibleBaseX, baseY, baseZ)
+            possibleQ = self.GenerateTargetJointAngles2(possibleBase, targetPose);
+            offsetX = possibleBase(1, 4) - baseX;
+            
+            possibleEEPose = self.model.fkine(possibleQ);
+            possibleEEPose(1, 4) = possibleEEPose(1, 4) + offsetX;
+            error = self.poseDist(possibleEEPose, possibleBase)
+            if error < 0.01
+                self.model.base = possibleBase;
+                self.model.animate(possibleQ);
+            else %If possible base pose doesnt work
+                if targetX > minLRX && targetX < maxLRX 
+                    %If not at linear rail extents, 
+                    %Check how close target Y value is to linear rail and
+                    %move away to make picking possible
+                end
+            end
+        end
         %% Move Arm
         function MoveArm(self, targetPose)
             q0 = self.model.getpos
 
             EEPose1 = targetPose
-            q1 = self.GenerateTargetJointAngles(EEPose1)
+            q1 = self.GenerateTargetJointAngles2(EEPose1)
             steps = 50;
             s = lspb(0,1,steps);
             qMatrix = nan(steps,5);
@@ -368,6 +538,10 @@ classdef Dobot < handle
             
             self.remoteControllerAttached = true;
             self.remoteController = vrjoystick(self.remoteControllerID);
+        end
+        %% Distance Formula
+        function dist = poseDist(self, pose1, pose2)
+           dist = abs(sqrt( (pose1(1, 4) - pose2(1, 4))^2 + (pose1(2, 4) - pose2(2, 4))^2 + (pose1(3, 4) - pose2(3, 4))^2 )); 
         end
         %% Advanced Teach function
         function AdvancedTeach(self, varargin)
