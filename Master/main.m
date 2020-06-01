@@ -4,9 +4,9 @@ clc;
 clear;
 
 % Create all the objects in the environment
-blueCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'blueCrate.ply', 'Pose', transl(-0.75, 0.35, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'b');
+blueCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'blueCrate.ply', 'Pose', transl(-0.75, 0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'b');
 yellowCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'yellowCrate.ply', 'Pose', transl(-0.75, 0, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'y');
-redCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'redCrate.ply', 'Pose', transl(-0.75, -0.35, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'r');
+redCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'redCrate.ply', 'Pose', transl(-0.75, -0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'r');
 redPen = EnvironmentObject('Type', 'target', 'ModelPath', 'redPen.ply', 'Pose', transl(0.75, 0.25, 0.8911), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'r');
 bluePen = EnvironmentObject('Type', 'target', 'ModelPath', 'bluePen.ply', 'Pose', transl(0.15, -0.1, 0.8911), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'b');
 pencil1 = EnvironmentObject('Type', 'target', 'ModelPath', 'pencil.ply', 'Pose', transl(0.3, 0.2, 0.8911), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');

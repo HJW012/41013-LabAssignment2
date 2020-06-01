@@ -2,7 +2,9 @@
 classdef GlobalController < handle
    properties
        environment;
-       depositLocations;
+       redDepositLocation;
+       greenDepositLocation;
+       blueDepositLocation;
        redTargetLocations;
        greenTargetLocations;
        blueTargetLocations;
@@ -32,18 +34,18 @@ classdef GlobalController < handle
            % Calculate Pick Up and Deposit locations
            self.camera.LocateObjects();
            
-           for i = 1:size(self.environment.deposit,2)
-               self.depositLocations(i, :) = self.camera.globalCentroids((end - (i-1)), :);
-           end
            
            
            
-           
+                     
            % NEED TO FIND WAY OF DOING THIS USING THE COLOURS OF EACH
            % TARGET OBJECT
+           self.redDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(5,1), self.camera.globalCentroids(5,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(5)));
            self.redTargetLocations(:,:,1) = eye(4) * transl(self.camera.globalCentroids(1,1), self.camera.globalCentroids(1,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(1)));
+           self.greenDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(6,1), self.camera.globalCentroids(6,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(6)));
            self.greenTargetLocations(:,:,1) = eye(4) * transl(self.camera.globalCentroids(2,1), self.camera.globalCentroids(2,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(2)));
            self.greenTargetLocations(:,:,2) = eye(4) * transl(self.camera.globalCentroids(4,1), self.camera.globalCentroids(4,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(4)));
+           self.blueDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(7,1), self.camera.globalCentroids(7,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(7)));
            self.blueTargetLocations(:,:,1) = eye(4) * transl(self.camera.globalCentroids(3,1), self.camera.globalCentroids(3,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(3)));
            
            % NEED TO FIX THE CODE ABOVE SO THAT IT IS NOT HARD CODED
@@ -60,9 +62,6 @@ classdef GlobalController < handle
                targetPose = self.redTargetLocations(:,:,i);
                self.environment.robot.MoveArm(targetPose * trotz(deg2rad(80)));
                
-               self.environment.robot.model.teach();
-               %pause();
-               
                pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
                
                % Return to deposit location
@@ -70,9 +69,14 @@ classdef GlobalController < handle
                targetPosition = startingPose(1,4);
                self.environment.robot.MoveToTargetLinearRail(targetPosition);
 
-               % Drop object
-               
-               
+%                % Drop object
+%                targetPose = self.redDepositLocation(:,:,i);
+%                self.environment.robot.MoveArm(targetPose * trotz(deg2rad(80)));
+%                
+%                pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
+%                
+%                self.environment.robot.MoveArm(self.environment.robot.model.fkine(self.environment.robot.jointAngles));
+
            end
            
            for i = 1:1:size(self.greenTargetLocations, 3)
@@ -90,7 +94,14 @@ classdef GlobalController < handle
                targetPosition = startingPose(1,4);
                self.environment.robot.MoveToTargetLinearRail(targetPosition);
 
-               % Drop object
+%                % Drop object
+%                targetPose = self.greenDepositLocation(:,:,i);
+%                self.environment.robot.MoveArm(targetPose * trotz(deg2rad(80)));
+%                
+%                pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
+%                
+%                self.environment.robot.MoveArm(self.environment.robot.model.fkine(self.environment.robot.jointAngles));
+
            end
            
            for i = 1:1:size(self.blueTargetLocations, 3)
@@ -108,7 +119,14 @@ classdef GlobalController < handle
                targetPosition = startingPose(1,4);
                self.environment.robot.MoveToTargetLinearRail(targetPosition);
 
-               % Drop object
+%                % Drop object
+%                targetPose = self.blueDepositLocation(:,:,i);
+%                self.environment.robot.MoveArm(targetPose * trotz(deg2rad(80)));
+%                
+%                pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
+%                
+%                self.environment.robot.MoveArm(self.environment.robot.model.fkine(self.environment.robot.jointAngles));
+
            end
                       
            
