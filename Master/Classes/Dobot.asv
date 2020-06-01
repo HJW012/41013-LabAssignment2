@@ -153,7 +153,7 @@ classdef Dobot < handle
         function q = GenerateTargetJointAngles(self, targetPose)
             targetX = targetPose(1, 4) - self.model.base(1, 4);
             targetY = targetPose(2, 4) - self.model.base(2, 4);
-            targetZ = self.model.base(3, 4) - targetPose(3, 4);
+            targetZ = self.model.base(3, 4) - targetPose(3, 4)
             theta = atan2(targetY, targetX) + -asin(self.model.base(1, 2));
             q(1) = theta;
             joint4X = targetX - self.linkLength(4) * cos(theta) % Get required joint 4 pose
@@ -202,7 +202,7 @@ classdef Dobot < handle
         function GenerateLinearRail(self, linearRailPose)
            self.linearRailPose = eye(4) * transl(linearRailPose);
            self.linearRail = EnvironmentObject('ModelPath', 'LinearRail.ply', 'Pose', self.linearRailPose, 'Dimensions', [0 0 0.051]);
-           self.basePose = transl(self.linearRailPose(1, 4)+self.baseWidth/2, self.linearRailPose(2, 4), self.linearRailPose(3, 4) + self.linearRail.dimensions(3));
+           self.basePose = transl(self.linearRailPose(1, 4)+self.baseWidth/2 - self.linearRail.modelMidPoint(1,1), self.linearRailPose(2, 4), self.linearRailPose(3, 4) + self.linearRail.dimensions(3));
            self.model.base = self.basePose;
            self.linearRailAttached = true;
         end
@@ -227,28 +227,39 @@ classdef Dobot < handle
         function MoveToTargetLinearRail(self, x)
             disp("X is : " + x);
             steps = 50;
-            distance = x - self.model.base(1,4);
-            
-            increment = distance/steps;
-            
-           if (x - self.baseWidth/2 >= 0 && x + self.baseWidth/2 <= self.linearRailLength)
-              
-               
-               self.model.base(1, 4) = self.linearRailPose(1, 4) + x;
-              self.model.animate(self.model.getpos);
+            distanceToTravel = x - self.model.base(1,4);
+           if (abs(distanceToTravel) + self.baseWidth/2 <= self.linearRailLength)
+              increment = distanceToTravel/steps;
+              for i = 1:steps
+                  self.model.base(1, 4) = self.model.base(1,4) + increment;
+                  self.model.animate(self.model.getpos);
+                  drawnow();
+              end
               disp(1);
            end
            
-           if (x - self.baseWidth/2 < 0)
-              self.model.base(1, 4) = self.linearRailPose(1, 4) + self.baseWidth/2;
-              self.model.animate(self.model.getpos);
+           if (distanceToTravel  self.baseWidth/2 < -1*self.linearRailLength)
+              distance = (self.linearRailPose(1, 4) - self.linearRail.modelMidPoint(1,1) + self.baseWidth/2) - self.model.base(1,4);
+              increment = distance/steps;
+              
+              for i = 1:steps
+                  self.model.base(1, 4) = self.model.base(1,4) + increment;
+                  self.model.animate(self.model.getpos);
+                  drawnow();
+              end
               disp(2);
            end
            
-           if (x > self.linearRailLength - self.baseWidth/2)
-               self.model.base(1, 4) = self.linearRailPose(1, 4) + self.linearRailTravelDist + self.baseWidth/2;
-               self.model.animate(self.model.getpos);
-               disp(3);
+           if (distanceToTravel > self.linearRailLength - self.baseWidth/2)
+              distance = (self.linearRailPose(1, 4) + self.linearRailTravelDist + self.baseWidth/2) - self.model.base(1,4);
+              increment = distance/steps;
+              
+              for i = 1:steps
+                  self.model.base(1, 4) = self.model.base(1,4) + increment;
+                  self.model.animate(self.model.getpos);
+                  drawnow();
+              end
+              disp(3);
            end
         end
         %% Move Arm

@@ -18,7 +18,7 @@ environment = Environment(blueCrate, yellowCrate, redCrate, redPen, bluePen, pen
 
 % Create the Dobot
 Dobot1 = Dobot('BasePose', eye(4)*transl(0,0,table.dimensions(1,3)));
-Dobot1.GenerateLinearRail([0,0,0.8911]);
+Dobot1.GenerateLinearRail([-0.3,0,0.8911]);
 
 % Add the Dobot to the environment
 environment.AddRobot(Dobot1);

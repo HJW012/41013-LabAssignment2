@@ -25,6 +25,8 @@ classdef GlobalController < handle
 %        end
        %% Run Simulation
        function Run(self)
+           startingPose = self.environment.robot.model.base();
+           
            disp('Calculating the Pick Up and Deposit Locations');
            
            % Calculate Pick Up and Deposit locations
@@ -56,13 +58,16 @@ classdef GlobalController < handle
                
                % Collect Object
                targetPose = self.redTargetLocations(:,:,i);
-               self.environment.robot.MoveArm(targetPose * trotz(pi/2));
+               self.environment.robot.MoveArm(targetPose * trotz(deg2rad(80)));
+               
+               self.environment.robot.model.teach();
+               %pause();
                
                pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
                
                % Return to deposit location
                self.environment.robot.MoveArm(self.environment.robot.model.fkine(self.environment.robot.jointAngles));
-               targetPosition = self.depositLocations(1,1);
+               targetPosition = startingPose(1,4);
                self.environment.robot.MoveToTargetLinearRail(targetPosition);
 
                % Drop object
@@ -82,7 +87,7 @@ classdef GlobalController < handle
                
                % Return to deposit location
                self.environment.robot.MoveArm(self.environment.robot.model.fkine(self.environment.robot.jointAngles));
-               targetPosition = self.depositLocations(1,1);
+               targetPosition = startingPose(1,4);
                self.environment.robot.MoveToTargetLinearRail(targetPosition);
 
                % Drop object
@@ -100,7 +105,7 @@ classdef GlobalController < handle
                
                % Return to deposit location
                self.environment.robot.MoveArm(self.environment.robot.model.fkine(self.environment.robot.jointAngles));
-               targetPosition = self.depositLocations(1,1);
+               targetPosition = startingPose(1,4);
                self.environment.robot.MoveToTargetLinearRail(targetPosition);
 
                % Drop object
