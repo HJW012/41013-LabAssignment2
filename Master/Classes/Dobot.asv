@@ -282,8 +282,7 @@ classdef Dobot < handle
                 warning on;
             end
             
-            % One side of the cube. NEED TO WORK OUT HOW TO CREATE THESE
-            % CUBES AROUND THE OBJECTS ON THE TABLE
+            % One side of the cube
             [Y,Z] = meshgrid(-0.1:0.01:0.1,-0.1:0.01:0.1);
             sizeMat = size(Y);
             X = repmat(0.1,sizeMat(1),sizeMat(2));

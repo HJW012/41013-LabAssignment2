@@ -6,12 +6,14 @@ classdef GlobalController < handle
        redTargetLocations;
        greenTargetLocations;
        blueTargetLocations;
+       camera;
        robot;
    end
    
    methods
-       function self = GlobalController(environment)  
+       function self = GlobalController(environment, camera)  
            self.environment = environment;
+           self.camera = camera;
        end
        %% Add Environment
        function AddEnvironment(self, environment)
@@ -42,6 +44,7 @@ classdef GlobalController < handle
        % deposit locations and store them in appropriate variables
        function Init(self)
            self.environment.Display();
+           self.camera.DisplayCamera();
            
        end
        %% Init Environment
