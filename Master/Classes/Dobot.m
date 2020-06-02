@@ -34,6 +34,7 @@ classdef Dobot < handle
         
         stop = false;
         
+        object;        
         
     end
     
@@ -88,7 +89,9 @@ classdef Dobot < handle
             L4 = Link('d',0,'a',0.05,'alpha',-pi/2,'qlim', deg2rad([-90,90]), 'offset', 0);
             L5 = Link('d',0.0625,'a',0,'alpha',0,'qlim', deg2rad([-85,85]), 'offset', 0);
 
-            self.model = SerialLink([L1 L2 L3 L4 L5],'name',name);            
+            self.model = SerialLink([L1 L2 L3 L4 L5],'name',name);
+            
+            self.object = EnvironmentObject.empty;
         end
 
         %% PlotAndColourRobot
@@ -357,38 +360,66 @@ classdef Dobot < handle
         end
         %% Move linear rail to target location
         function MoveToTargetLinearRail(self, x)
-            disp("X is : " + x);
-            steps = 50;
-            distanceToTravel = x - self.model.base(1,4);
-           if (abs(distanceToTravel) + self.baseWidth/2 <= self.linearRailLength)
+           disp("X is : " + x);
+           steps = 50;
+           distanceToTravel = x - self.model.base(1,4);
+            
+           if (((self.linearRailPose(1,4) - self.linearRail.modelMidPoint(1,1) + self.baseWidth/2) <= x) && (x + self.baseWidth/2 <= (self.linearRailPose(1,4) - self.linearRail.modelMidPoint(1,1) + self.linearRailTravelDist)))
               increment = distanceToTravel/steps;
               for i = 1:steps
                   self.model.base(1, 4) = self.model.base(1,4) + increment;
                   self.model.animate(self.model.getpos);
+                  
+                   for k = 1:1:size(self.object, 2)
+                        % Set the desired object pose to be at the end effector
+                        objectPose = self.model.fkine(self.model.getpos());
+
+                        % Update the object's position
+                        self.object(k).SetPose(objectPose);
+                   end
+                  
                   drawnow();
               end
               disp(1);
            end
            
-           if (distanceToTravel + self.baseWidth/2 < -1*self.linearRailLength)
+           if (x < (self.linearRailPose(1,4) - self.linearRail.modelMidPoint(1,1) + self.baseWidth/2))
               distance = (self.linearRailPose(1, 4) - self.linearRail.modelMidPoint(1,1) + self.baseWidth/2) - self.model.base(1,4);
               increment = distance/steps;
               
               for i = 1:steps
                   self.model.base(1, 4) = self.model.base(1,4) + increment;
                   self.model.animate(self.model.getpos);
+                  
+                  for k = 1:1:size(self.object, 2)
+                    % Set the desired object pose to be at the end effector
+                    objectPose = self.model.fkine(self.model.getpos());
+
+                    % Update the object's position
+                    self.object(k).SetPose(objectPose);
+                  end
+                  
                   drawnow();
               end
               disp(2);
            end
            
-           if (distanceToTravel + self.baseWidth/2 > self.linearRailLength)
+           if (x + self.baseWidth/2 > (self.linearRailPose(1,4) - self.linearRail.modelMidPoint(1,1) + self.linearRailTravelDist))
               distance = (self.linearRailPose(1, 4) - self.linearRail.modelMidPoint(1,1) + self.linearRailTravelDist + self.baseWidth/2) - self.model.base(1,4);
               increment = distance/steps;
               
               for i = 1:steps
                   self.model.base(1, 4) = self.model.base(1,4) + increment;
                   self.model.animate(self.model.getpos);
+                  
+                  
+                  for k = 1:1:size(self.object, 2)
+                    % Set the desired object pose to be at the end effector
+                    objectPose = self.model.fkine(self.model.getpos());
+
+                    % Update the object's position
+                    self.object(k).SetPose(objectPose);
+                  end
                   drawnow();
               end
               disp(3);
@@ -434,12 +465,12 @@ classdef Dobot < handle
         end
         %% Move Arm
         function MoveArm(self, targetPose)
-            q0 = self.model.getpos
+            q0 = self.model.getpos;
 
-            EEPose1 = targetPose
+            %EEPose1 = targetPose
             %q1 = self.GenerateTargetJointAngles2(self.model.base, EEPose1)
             
-            q1 = self.model.ikcon(targetPose, q0)
+            q1 = self.model.ikcon(targetPose, q0);
             
             %q1(4) = pi/2 - (q1(2) + q1(3));
             
@@ -453,17 +484,26 @@ classdef Dobot < handle
 
             for i = 1:steps
                self.model.animate(qMatrix(i, :));
+               
+               for k = 1:1:size(self.object, 2)
+                    % Set the desired object pose to be at the end effector
+                    objectPose = self.model.fkine(self.model.getpos());
+
+                    % Update the object's position
+                    self.object(k).SetPose(objectPose);
+               end
+               
                drawnow();
             end
         end
         
         %% Move Arm Joint Angles
         function MoveArmJointAngles(self, targetAngles)
-            q0 = self.model.getpos
+            q0 = self.model.getpos;
 
             %q1 = self.GenerateTargetJointAngles2(self.model.base, EEPose1)
             
-            q1 = targetAngles
+            q1 = targetAngles;
             
             %q1(4) = pi/2 - (q1(2) + q1(3));
             
@@ -477,6 +517,15 @@ classdef Dobot < handle
 
             for i = 1:steps
                self.model.animate(qMatrix(i, :));
+               
+               for k = 1:1:size(self.object, 2)
+                    % Set the desired object pose to be at the end effector
+                    objectPose = self.model.fkine(self.model.getpos());
+
+                    % Update the object's position
+                    self.object(k).SetPose(objectPose);
+               end
+               
                drawnow();
             end
         end
