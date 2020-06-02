@@ -55,6 +55,15 @@ function AdvancedTeach_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for AdvancedTeach
 handles.output = hObject;
 
+id = 2; % Note: may need to be changed if multiple joysticks present
+handles.joy = vrjoystick(id);
+
+handles.robot = Dobot('BasePose', transl(0, 0, 0));
+handles.robot.GenerateLinearRail([0,0,0]);
+hold on;
+handles.robot.Display;
+handles.robot.model.base
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -456,3 +465,57 @@ function check_Controller_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of check_Controller
+%value = get(handles.check_Controller, 'Value'); for outside this function
+if get(hObject, 'Value') == 1
+    disp("Check box on");
+    dt = 0.15;
+    n = 0;
+    q = handles.robot.model.getpos;
+    tic;
+    while (get(hObject, 'Value') == 1)
+        n=n+1; % increment step count
+
+        % read joystick
+        [axes, buttons, povs] = read(handles.joy);
+
+        % -------------------------------------------------------------
+        % YOUR CODE GOES HERE
+        % 1 - turn joystick input into an end-effector velocity command
+        Kv = 0.3; % linear velocity gain
+        Kw = 0.8; % angular velocity gain
+
+        vx = Kv*axes(1);
+        vy = Kv*-axes(2);
+        vz = Kv*axes(3);
+
+        wx = Kw*axes(4);
+        wy = Kw*axes(3);
+        wz = Kw*(buttons(6)-buttons(8));
+
+        dx = [vx;vy;vz;wx;wy;wz]; % combined velocity vector
+
+        % 2 - use DLS J inverse to calculate joint velocity
+        lambda = 0.5;
+        J = handles.robot.model.jacob0(q);
+        Jinv_dls = inv((J'*J)+lambda^2*eye(5))*J';
+        dq = Jinv_dls*dx;
+
+        % 3 - apply joint velocity to step robot joint angles 
+        q = q + dq'*dt;
+
+        % -------------------------------------------------------------
+
+        % Update plot
+        handles.robot.model.animate(q);  
+        drawnow();
+
+        % wait until loop time elapsed
+        if (toc > dt*n)
+            warning('Loop %i took too much time - consider increating dt',n);
+        end
+        while (toc < dt*n); % wait until loop time (dt) has elapsed 
+        end
+    end
+elseif get(hObject, 'Value') == 0
+    disp("Check box off");
+end
