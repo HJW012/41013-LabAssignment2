@@ -55,21 +55,24 @@ robot = Dobot('BasePose', eye(4)*transl(0,0,0));
 robot.Display();
 q0 = robot.model.getpos;
 upper = redPen.pose * transl(0, 0, 0.065) * trotx(-pi);
-q1 = robot.model.ikcon(upper, q0);
-q2 = robot.model.ikcon(redPen.pose * trotx(-pi), q1);
+[q1 err1 exitflag1] = robot.model.ikcon(upper, q0);
+[q2 err2 exitflag2] = robot.model.ikcon(redPen.pose * trotx(-pi), q1);
 pose3 = transl(0, 0.2, 0.1) * trotx(-pi);
-q3 = robot.model.ikcon(pose3, q2);
-
+[q3 err3 exitflag3] = robot.model.ikcon(pose3, q2);
+pose4 = transl(0, -.2, 0.1) * trotx(-pi);
+[q4 err4 exitflag4] = robot.model.ikcon(pose4, q3);
 
 
 s = lspb(0, 1, 50);
 qMatrix1 = nan(50, 5);
 qMatrix2 = nan(50, 5);
 qMatrix3 = nan(50, 5);
+qMatrix4 = nan(50, 5);
 for i = 1:50
     qMatrix1(i,:) = (1 - s(i))*q0 + s(i)*q1;
     qMatrix2(i,:) = (1 - s(i))*q1 + s(i)*q2;
     qMatrix3(i,:) = (1 - s(i))*q2 + s(i)*q3;
+    qMatrix4(i,:) = (1 - s(i))*q3 + s(i)*q4;
 end
 
 pause();
@@ -82,3 +85,10 @@ for i = 1:50
    robot.model.animate(qMatrix2(i, :));
    drawnow(); 
 end
+%% GUI Test
+close all;
+clear;
+clc;
+
+test = gui_class_example();
+
