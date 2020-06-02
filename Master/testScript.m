@@ -85,6 +85,42 @@ for i = 1:50
    robot.model.animate(qMatrix2(i, :));
    drawnow(); 
 end
+%% 
+close all;
+clear;
+clc;
+
+pencil2 = EnvironmentObject('Type', 'target', 'ModelPath', 'pencil.ply', 'Pose', transl(0, -0.3, 0), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
+robot = Dobot('BasePose', eye(4)*transl(-0.0865,0,0.051));
+bluePen = EnvironmentObject('Type', 'target', 'ModelPath', 'bluePen.ply', 'Pose', transl(-0.0865, -0.3012, 0), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'b');
+
+robot.Display();
+hold on;
+bluePen.Display();
+
+q0 = robot.model.getpos;
+wayPoint = bluePen.pose * transl(0, 0, 0.05);
+[q1 err exitFlag] = robot.model.ikcon(wayPoint * trotx(pi), q0);
+[q2 err exitFlag] = robot.model.ikcon(bluePen.pose * trotx(pi), q1);
+s = lspb(0, 1, 50);
+
+qMatrix1 = nan(50, 5);
+for i = 1:50
+    qMatrix1(i,:) = (1 - s(i))*q0 + s(i)*q1;
+    qMatrix2(i,:) = (1 - s(i))*q1 + s(i)*q2;
+end
+
+pause();
+for i = 1:50
+   robot.model.animate( qMatrix1(i, :));
+   drawnow();
+end
+
+pause();
+for i = 1:50
+   robot.model.animate( qMatrix2(i, :));
+   drawnow();
+end
 %% GUI Test
 close all;
 clear;

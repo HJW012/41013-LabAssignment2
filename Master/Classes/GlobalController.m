@@ -48,13 +48,15 @@ classdef GlobalController < handle
            self.blueDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(3,1), self.camera.globalCentroids(3,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(3)));
            self.blueTargetLocations(:,:,1) = eye(4) * transl(self.camera.globalCentroids(6,1), self.camera.globalCentroids(6,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(6)));
            
-           % NEED TO FIX THE CODE ABOVE SO THAT IT IS NOT HARD CODED
+           % NEED TO FIX THE CODE ABOVE SO THAT IT IS NOT HARD CODED - can
+           % be done with pixel colours
            
  
            
            
            
            % Drive to pick up location on linear slide
+           
            for i = 1:1:size(self.redTargetLocations, 3)
                targetPosition = self.redTargetLocations(1,4,i);
                self.environment.robot.MoveToTargetLinearRail(targetPosition);
@@ -68,11 +70,11 @@ classdef GlobalController < handle
                    self.environment.robot.MoveArmJointAngles(deg2rad([90, 60, 65, -35, 0]));
                end
 
-               self.environment.robot.MoveArm(targetPose * trotz(deg2rad(80)) * trotx(pi));
+               self.environment.robot.MoveArm(targetPose * trotx(pi) * trotz(deg2rad(80)));
                
                              
                disp('Target Pose: ');
-               disp(targetPose * trotz(deg2rad(80)) * trotx(pi));
+               disp(targetPose * trotx(pi));
                pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
                error = targetPose - pose
                
@@ -104,10 +106,10 @@ classdef GlobalController < handle
                    self.environment.robot.MoveArmJointAngles(deg2rad([90, 60, 65, -35, 0]));
                end
                
-               self.environment.robot.MoveArm(targetPose * trotz(deg2rad(80)) * trotx(pi));
+               self.environment.robot.MoveArm(targetPose * trotx(pi) * trotz(deg2rad(80)));
                
                disp('Target Pose: ');
-               disp(targetPose * trotz(deg2rad(80)) * trotx(pi));
+               disp(targetPose * trotx(pi));
                pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
                error = targetPose - pose
                
@@ -139,10 +141,11 @@ classdef GlobalController < handle
                    self.environment.robot.MoveArmJointAngles(deg2rad([90, 60, 65, -35, 0]));
                end
                
-               self.environment.robot.MoveArm(targetPose * trotz(deg2rad(80)) * trotx(pi));
+               %self.environment.robot.
+               self.environment.robot.MoveArm(targetPose * trotx(pi) * trotz(deg2rad(80)));
                
                disp('Target Pose: ');
-               disp(targetPose * trotz(deg2rad(80)) * trotx(pi));
+               disp(targetPose * trotx(pi));
                pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
                error = targetPose - pose
                
