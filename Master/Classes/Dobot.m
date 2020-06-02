@@ -437,7 +437,36 @@ classdef Dobot < handle
             q0 = self.model.getpos
 
             EEPose1 = targetPose
-            q1 = self.GenerateTargetJointAngles2(EEPose1)
+            %q1 = self.GenerateTargetJointAngles2(self.model.base, EEPose1)
+            
+            q1 = self.model.ikcon(targetPose, q0)
+            
+            %q1(4) = pi/2 - (q1(2) + q1(3));
+            
+            steps = 50;
+            s = lspb(0,1,steps);
+            qMatrix = nan(steps,5);
+
+            for i = 1:steps
+                qMatrix(i,:) = (1-s(i))*q0 + s(i)*q1;
+            end
+
+            for i = 1:steps
+               self.model.animate(qMatrix(i, :));
+               drawnow();
+            end
+        end
+        
+        %% Move Arm Joint Angles
+        function MoveArmJointAngles(self, targetAngles)
+            q0 = self.model.getpos
+
+            %q1 = self.GenerateTargetJointAngles2(self.model.base, EEPose1)
+            
+            q1 = targetAngles
+            
+            %q1(4) = pi/2 - (q1(2) + q1(3));
+            
             steps = 50;
             s = lspb(0,1,steps);
             qMatrix = nan(steps,5);
