@@ -55,12 +55,11 @@ classdef LightCurtain < handle
        
        function checkCurtain = CheckLightCurtain(self, object)
             checkCurtain = 0;
-<<<<<<< HEAD
-            v3d = convhull(object.modelMesh.Vertices);
-=======
+
+            %v3d = object.modelMesh.Vertices;
+
             %v3d = object.modelMesh.Vertices;
             %faceNormals = zeros(size(object.modelF,1),3);
->>>>>>> 7a4803a0a50be5236b960c30e48463bc089331a1
             
             [k, volume] = convhull(object.modelMesh.Vertices(:, 1), object.modelMesh.Vertices(:, 2), object.modelMesh.Vertices(:, 3)); 
             tr = triangulation(k, object.modelMesh.Vertices(:, 1), object.modelMesh.Vertices(:, 2), object.modelMesh.Vertices(:, 3)); 
