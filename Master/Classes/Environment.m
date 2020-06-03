@@ -7,8 +7,11 @@ classdef Environment < handle
        miscObjects;
        targetIndex = 1;
        depositIndex = 1;
+       miscObjectIndex = 1;
        lightCurtain;
        robot;
+       checkObjects;
+       checkObjectIndex = 1;
    end
    
    methods 
@@ -39,7 +42,11 @@ classdef Environment < handle
            if strcmp(object.type, 'misc') 
                self.miscObjects{self.miscObjectIndex} = object;
                self.miscObjectIndex = self.miscObjectIndex + 1;
+               self.checkObjects{self.checkObjectIndex} = object;
+               self.checkObjectIndex = self.checkObjectIndex + 1;
            end
+           
+           
        end
        %% Add Robot
        function AddRobot(self, robot)

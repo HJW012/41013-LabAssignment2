@@ -32,7 +32,7 @@ classdef Dobot < handle
         
         linkLength = [0.135, 0.139, 0.16, 0.05, 0.0625];
         
-        stop = false;
+        stop = 0;
         
         object;        
         
@@ -516,6 +516,11 @@ classdef Dobot < handle
             end
 
             for i = 1:steps
+                
+               while (self.stop == 1)
+                   pause(0.01);
+               end
+                
                self.model.animate(qMatrix(i, :));
                
                for k = 1:1:size(self.object, 2)

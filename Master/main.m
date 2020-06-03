@@ -36,7 +36,6 @@ plc = GlobalController(environment, camera);
 plc.Init();
 
 disp('Initialisation Complete');
-
 plc.Run();
 
 %% Advanced Teach Demo

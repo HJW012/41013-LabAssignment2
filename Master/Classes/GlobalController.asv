@@ -11,6 +11,7 @@ classdef GlobalController < handle
        camera;
        robot;
        hand;
+       objects;
    end
    
    methods
@@ -52,7 +53,7 @@ classdef GlobalController < handle
            % NEED TO FIX THE CODE ABOVE SO THAT IT IS NOT HARD CODED
            
  
-           
+
            
            
            % Drive to pick up location on linear slide
@@ -76,16 +77,16 @@ classdef GlobalController < handle
                               
                if targetPose(2,4) < self.environment.robot.model.base(2,4)
                    waypoint = deg2rad([-90, 60, 65, -35, 0]);
-                   self.environment.robot.MoveArmJointAngles(waypoint);
+                   self.MoveRobotArmJointAngles(waypoint);
                    targetPose = self.redTargetLocations(:,:,i) * trotx(pi) * trotz(deg2rad(80));
 
                else
                    waypoint = deg2rad([90, 60, 65, -35, 0]);
-                   self.environment.robot.MoveArmJointAngles(waypoint);
+                   self.MoveRobotArmJointAngles(waypoint);
                    targetPose = self.redTargetLocations(:,:,i) * trotz(deg2rad(80)) * trotx(pi);
                end
 
-               self.environment.robot.MoveArm(targetPose);
+               self.MoveRobotArm(targetPose);
                
                disp('Target Pose: ');
                disp(targetPose);
@@ -95,37 +96,34 @@ classdef GlobalController < handle
                self.environment.robot.object = self.environment.targets{objectIndex};
                
                % Return to deposit location
-               self.environment.robot.MoveArmJointAngles(waypoint);
-               self.environment.robot.MoveArmJointAngles(self.environment.robot.jointAngles);
+               self.MoveRobotArmJointAngles(waypoint);
+               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
 
                targetPosition = self.redDepositLocation(1,4,1);
                self.environment.robot.MoveToTargetLinearRail(targetPosition);
 
                % Drop object
                targetPose = self.redDepositLocation(:,:,1);
-               self.environment.robot.MoveArm(targetPose * trotx(pi));
+               self.MoveRobotArm(targetPose * trotx(pi));
                
                pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
                
                self.environment.robot.object = EnvironmentObject.empty;
                
-               self.environment.robot.MoveArmJointAngles(self.environment.robot.jointAngles);   
+               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);   
            end
+           
            
            
            self.hand = EnvironmentObject('Type', 'misc', 'ModelPath', 'hand.ply', 'Pose', transl(-0.2, 0.45, self.environment.foundation.dimensions(1,3)+0.4), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
            self.hand.SetPose(self.hand.pose * trotz(-pi/2));
            self.hand.Display();
            
-           disp('Hand Pose: ');
-           disp(self.hand.pose);
+           self.environment.AddObject(self.hand);
            
-           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.hand);
+
            
-           if checkCurtain == 1
-              pause();
-              
-           end
+           
            
            
            for i = 1:1:size(self.greenTargetLocations, 3)
@@ -148,17 +146,17 @@ classdef GlobalController < handle
                
                if targetPose(2,4) < self.environment.robot.model.base(2,4)
                    waypoint = deg2rad([-90, 60, 65, -35, 0]);
-                   self.environment.robot.MoveArmJointAngles(waypoint);
+                   self.MoveRobotArmJointAngles(waypoint);
                    targetPose = self.greenTargetLocations(:,:,i) * trotx(pi) * trotz(deg2rad(80));
 
                else
                    waypoint = deg2rad([90, 60, 65, -35, 0]);
-                   self.environment.robot.MoveArmJointAngles(waypoint);
+                   self.MoveRobotArmJointAngles(waypoint);
                    targetPose = self.greenTargetLocations(:,:,i) * trotz(deg2rad(80)) * trotx(pi);
 
                end
 
-               self.environment.robot.MoveArm(targetPose);
+               self.MoveRobotArm(targetPose);
                       
                disp('Target Pose: ');
                disp(targetPose);
@@ -168,21 +166,21 @@ classdef GlobalController < handle
                self.environment.robot.object = self.environment.targets{objectIndex};
                
                % Return to deposit location
-               self.environment.robot.MoveArmJointAngles(waypoint);
-               self.environment.robot.MoveArmJointAngles(self.environment.robot.jointAngles);
+               self.MoveRobotArmJointAngles(waypoint);
+               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
 
                targetPosition = self.greenDepositLocation(1,4,1);
                self.environment.robot.MoveToTargetLinearRail(targetPosition);
 
                % Drop object
                targetPose = self.greenDepositLocation(:,:,1);
-               self.environment.robot.MoveArm(targetPose * trotx(pi));
+               self.MoveRobotArm(targetPose * trotx(pi));
                
                pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
                
                self.environment.robot.object = EnvironmentObject.empty;
                
-               self.environment.robot.MoveArmJointAngles(self.environment.robot.jointAngles);
+               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
            end
            
            
@@ -207,17 +205,17 @@ classdef GlobalController < handle
                
                if targetPose(2,4) < self.environment.robot.model.base(2,4)
                    waypoint = deg2rad([-90, 60, 65, -35, 0]);
-                   self.environment.robot.MoveArmJointAngles(waypoint);
+                   self.MoveRobotArmJointAngles(waypoint);
                    targetPose = self.blueTargetLocations(:,:,i) * trotx(pi) * trotz(deg2rad(80));
 
                else
                    waypoint = deg2rad([90, 60, 65, -35, 0]);
-                   self.environment.robot.MoveArmJointAngles(waypoint);
+                   self.MoveRobotArmJointAngles(waypoint);
                    targetPose = self.blueTargetLocations(:,:,i) * trotz(deg2rad(80)) * trotx(pi);
 
                end
 
-               self.environment.robot.MoveArm(targetPose);
+               self.MoveRobotArm(targetPose);
                       
                disp('Target Pose: ');
                disp(targetPose);
@@ -227,21 +225,21 @@ classdef GlobalController < handle
                self.environment.robot.object = self.environment.targets{objectIndex};
                
                % Return to deposit location
-               self.environment.robot.MoveArmJointAngles(waypoint);
-               self.environment.robot.MoveArmJointAngles(self.environment.robot.jointAngles);
+               self.MoveRobotArmJointAngles(waypoint);
+               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
 
                targetPosition = self.blueDepositLocation(1,4,1);
                self.environment.robot.MoveToTargetLinearRail(targetPosition);
 
                % Drop object
                targetPose = self.blueDepositLocation(:,:,1);
-               self.environment.robot.MoveArm(targetPose * trotx(pi));
+               self.MoveRobotArm(targetPose * trotx(pi));
                
                pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
                
                self.environment.robot.object = EnvironmentObject.empty;
                
-               self.environment.robot.MoveArmJointAngles(self.environment.robot.jointAngles);
+               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
            end
                       
            
@@ -271,6 +269,274 @@ classdef GlobalController < handle
        function dist = DistanceBetweenPoses(self, pose1, pose2)
             dist = sqrt(((pose1(1,4)-pose2(1,4))^2 + (pose1(2,4)-pose2(2,4))^2 + (pose1(3,4)-pose2(3,4))^2));
        end
+       
+       
+       %% Move Arm
+        function MoveRobotArm(self, targetPose)
+            q0 = self.environment.robot.model.getpos;
+
+            %EEPose1 = targetPose
+            %q1 = self.GenerateTargetJointAngles2(self.model.base, EEPose1)
+            
+            q1 = self.environment.robot.model.ikcon(targetPose, q0);
+            
+            %q1(4) = pi/2 - (q1(2) + q1(3));
+            
+            steps = 50;
+            s = lspb(0,1,steps);
+            qMatrix = nan(steps,5);
+
+            for i = 1:steps
+                qMatrix(i,:) = (1-s(i))*q0 + s(i)*q1;
+            end
+
+            for i = 1:steps
+               self.environment.robot.stop = 0;
+               if 0 < size(self.environment.checkObjects, 2)
+                   for j = 1:size(self.environment.checkObjects, 2)
+                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+
+                       if checkCurtain == 1
+                          self.environment.robot.stop = 1;
+                          break;
+                       end
+                   end
+               end
+               
+               while (self.environment.robot.stop == 1)
+                   disp('Robot Stopped');
+                   self.environment.robot.stop = 0;
+                   for j = 1:size(self.environment.checkObjects, 2)
+                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+
+                       if checkCurtain == 1
+                          self.environment.robot.stop = 1;
+                          break;
+                       end
+                   end
+                   pause(0.01);
+               end
+                
+               self.environment.robot.model.animate(qMatrix(i, :));
+               
+               for k = 1:1:size(self.environment.robot.object, 2)
+                    % Set the desired object pose to be at the end effector
+                    objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
+
+                    % Update the object's position
+                    self.environment.robot.object(k).SetPose(objectPose);
+               end
+               
+               drawnow();
+            end
+        end
+        
+        %% Move Arm Joint Angles
+        function MoveRobotArmJointAngles(self, targetAngles)
+            q0 = self.environment.robot.model.getpos;
+
+            %q1 = self.GenerateTargetJointAngles2(self.model.base, EEPose1)
+            
+            q1 = targetAngles;
+            
+            %q1(4) = pi/2 - (q1(2) + q1(3));
+            
+            steps = 50;
+            s = lspb(0,1,steps);
+            qMatrix = nan(steps,5);
+
+            for i = 1:steps
+                qMatrix(i,:) = (1-s(i))*q0 + s(i)*q1;
+            end
+
+            for i = 1:steps
+               self.environment.robot.stop = 0;
+               if 0 < size(self.environment.checkObjects, 2)
+                   for j = 1:size(self.environment.checkObjects, 2)
+                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+
+                       if checkCurtain == 1
+                          self.environment.robot.stop = 1;
+                          break;
+                       end
+                   end
+               end
+               
+               while (self.environment.robot.stop == 1)
+                   disp('Robot Stopped');
+                   self.environment.robot.stop = 0;
+                   for j = 1:size(self.environment.checkObjects, 2)
+                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+
+                       if checkCurtain == 1
+                          self.environment.robot.stop = 1;
+                          break;
+                       end
+                   end
+                   pause(0.01);
+               end
+                
+               self.environment.robot.model.animate(qMatrix(i, :));
+               
+               for k = 1:1:size(self.environment.robot.object, 2)
+                    % Set the desired object pose to be at the end effector
+                    objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
+
+                    % Update the object's position
+                    self.environment.robot.object(k).SetPose(objectPose);
+               end
+               
+               drawnow();
+            end
+        end
+        
+        %% Move linear rail to target location
+        function MoveToTargetLinearRail(self, x)
+           disp("X is : " + x);
+           steps = 50;
+           distanceToTravel = x - self.model.base(1,4);
+            
+           if (((self.environment.robot.linearRailPose(1,4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robot.baseWidth/2) <= x) && (x + self.environment.robot.baseWidth/2 <= (self.environment.robot.linearRailPose(1,4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robot.linearRailTravelDist)))
+              increment = distanceToTravel/steps;
+              for i = 1:steps
+                   self.environment.robot.stop = 0;
+                   if 0 < size(self.environment.checkObjects, 2)
+                       for j = 1:size(self.environment.checkObjects, 2)
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+
+                           if checkCurtain == 1
+                              self.environment.robot.stop = 1;
+                              break;
+                           end
+                       end
+                   end
+
+                   while (self.environment.robot.stop == 1)
+                       disp('Robot Stopped');
+                       self.environment.robot.stop = 0;
+                       for j = 1:size(self.environment.checkObjects, 2)
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+
+                           if checkCurtain == 1
+                              self.environment.robot.stop = 1;
+                              break;
+                           end
+                       end
+                       pause(0.01);
+                   end
+
+                  self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+                  self.environment.robot.model.animate(self.environment.robot.model.getpos);
+                  
+                   for k = 1:1:size(self.environment.robot.object, 2)
+                        % Set the desired object pose to be at the end effector
+                        objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
+
+                        % Update the object's position
+                        self.environment.robot.object(k).SetPose(objectPose);
+                   end
+                  
+                  drawnow();
+              end
+              disp(1);
+           end
+           
+           if (x < (self.linearRailPose(1,4) - self.linearRail.modelMidPoint(1,1) + self.baseWidth/2))
+              distance = (self.linearRailPose(1, 4) - self.linearRail.modelMidPoint(1,1) + self.baseWidth/2) - self.model.base(1,4);
+              increment = distance/steps;
+              
+              for i = 1:steps
+                   self.environment.robot.stop = 0;
+                   if 0 < size(self.environment.checkObjects, 2)
+                       for j = 1:size(self.environment.checkObjects, 2)
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+
+                           if checkCurtain == 1
+                              self.environment.robot.stop = 1;
+                              break;
+                           end
+                       end
+                   end
+
+                   while (self.environment.robot.stop == 1)
+                       disp('Robot Stopped');
+                       self.environment.robot.stop = 0;
+                       for j = 1:size(self.environment.checkObjects, 2)
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+
+                           if checkCurtain == 1
+                              self.environment.robot.stop = 1;
+                              break;
+                           end
+                       end
+                       pause(0.01);
+                   end
+                  
+                  
+                  self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+                  self.environment.robot.model.animate(self.environment.robot.model.getpos);
+                  
+                  for k = 1:1:size(self.environment.robot.object, 2)
+                    % Set the desired object pose to be at the end effector
+                    objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
+
+                    % Update the object's position
+                    self.environment.robot.object(k).SetPose(objectPose);
+                  end
+                  
+                  drawnow();
+              end
+              disp(2);
+           end
+           
+           if (x + self.baseWidth/2 > (self.linearRailPose(1,4) - self.linearRail.modelMidPoint(1,1) + self.linearRailTravelDist))
+              distance = (self.linearRailPose(1, 4) - self.linearRail.modelMidPoint(1,1) + self.linearRailTravelDist + self.baseWidth/2) - self.model.base(1,4);
+              increment = distance/steps;
+              
+              for i = 1:steps
+                   self.environment.robot.stop = 0;
+                   if 0 < size(self.environment.checkObjects, 2)
+                       for j = 1:size(self.environment.checkObjects, 2)
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+
+                           if checkCurtain == 1
+                              self.environment.robot.stop = 1;
+                              break;
+                           end
+                       end
+                   end
+
+                   while (self.environment.robot.stop == 1)
+                       disp('Robot Stopped');
+                       self.environment.robot.stop = 0;
+                       for j = 1:size(self.environment.checkObjects, 2)
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+
+                           if checkCurtain == 1
+                              self.environment.robot.stop = 1;
+                              break;
+                           end
+                       end
+                       pause(0.01);
+                   end
+                  
+                  
+                  self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+                  self.environment.robot.model.animate(self.environment.robot.model.getpos);
+                  
+                  
+                  for k = 1:1:size(self.enviroobject, 2)
+                    % Set the desired object pose to be at the end effector
+                    objectPose = self.model.fkine(self.model.getpos());
+
+                    % Update the object's position
+                    self.object(k).SetPose(objectPose);
+                  end
+                  drawnow();
+              end
+              disp(3);
+           end
+        end
        
    end
 end
