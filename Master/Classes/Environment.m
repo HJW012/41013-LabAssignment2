@@ -12,6 +12,8 @@ classdef Environment < handle
        robot;
        checkObjects;
        checkObjectIndex = 1;
+       obstacleObjects;
+       obstacleObjectIndex = 1;
    end
    
    methods 
@@ -46,6 +48,11 @@ classdef Environment < handle
                self.checkObjectIndex = self.checkObjectIndex + 1;
            end
            
+           if strcmp(object.type, 'obstacle') 
+               self.obstacleObjects{self.obstacleObjectIndex} = object;
+               self.obstacleObjectIndex = self.obstacleObjectIndex + 1;
+           end
+           
            
        end
        %% Add Robot
@@ -76,7 +83,7 @@ classdef Environment < handle
            self.robot.Display();
            
            self.lightCurtain.Display();
-           
+                      
            axis equal;
            camlight;
        end

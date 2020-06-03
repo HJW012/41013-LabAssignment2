@@ -124,7 +124,7 @@ classdef GlobalController < handle
 
 
                   
-           obstacle = EnvironmentObject('Type', 'obstacle', 'ModelPath', 'obstacleBall.ply', 'Pose', transl(0, 0, self.environment.foundation.dimensions(1,3) + 0.2), 'Dimensions', [0.1 0.1 0.1], 'GeneralColour', 'y');
+           obstacle = EnvironmentObject('Type', 'obstacle', 'ModelPath', 'obstacleCube.ply', 'Pose', transl(0, 0, table.dimensions(1,3) + 0.2), 'Dimensions', [0.1 0.1 0.1], 'GeneralColour', 'y');
            obstacle.Display();
            self.environment.AddObject(obstacle);
            
@@ -304,9 +304,10 @@ classdef GlobalController < handle
                     end
                 end
             end
-            while (self.environment.robot.collisionDetected == 1)
+            
+            while (self.environment.robot.collisionDetection == 1)
                self.environment.robot.collisionDetected = 0;   
-               for j = 1:size(self.environment.obstacleObjects, 2)
+               for j = 1:size(self.environment.checkObjects, 2)
                    checkCollision = self.environment.robot.CollisionCheck(qMatrix, self.environment.obstacleObjects{j}.modelMesh.Vertices);
 
                    if checkCollision == 1
@@ -374,32 +375,6 @@ classdef GlobalController < handle
             for i = 1:steps
                 qMatrix(i,:) = (1-s(i))*q0 + s(i)*q1;
             end
-            
-            if 0 < size(self.environment.obstacleObjects, 2)
-                for i = 1:1:size(self.environment.obstacleObjects, 2)
-                    checkCollision = self.environment.robot.CollisionCheck(qMatrix, self.environment.obstacleObjects{i}.modelMesh.Vertices);
-                    
-                    if checkCollision == 1
-                        self.environment.robot.collisionDetected = 1;
-                        break;
-                    end
-                end
-            end
-            
-            while (self.environment.robot.collisionDetected == 1)
-               self.environment.robot.collisionDetected = 0;   
-               for j = 1:size(self.environment.obstacleObjects, 2)
-                   checkCollision = self.environment.robot.CollisionCheck(qMatrix, self.environment.obstacleObjects{j}.modelMesh.Vertices);
-
-                   if checkCollision == 1
-                      self.environment.robot.collisionDetected = 1;
-                      break;
-                   end
-               end
-               pause(0.01);
-            end
-            
-            
 
             for i = 1:steps
                self.environment.robot.stop = 0;

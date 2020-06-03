@@ -34,8 +34,6 @@ classdef Dobot < handle
         
         stop = 0;
         
-        collisionDetected = 0;
-        
         object;        
         
     end
@@ -556,14 +554,14 @@ classdef Dobot < handle
 
                 self.model.points{i} = [X(:),Y(:),Z(:)];
                 warning off
-                self.model.faces{i} = delaunay(self.model.points{i});    
+                self.model.faces{i} = delaunay(Dobot_1.points{i});    
                 warning on;
             end
 
             for j = 1:1:size(qMatrix,1)
                 position = qMatrix(j,:);
 
-                check = self.CheckEllipsoidCollision(obstaclePoints, position, radii);
+                check = CheckEllipsoidCollision(obstaclePoints, position, self.model, radii);
 
                 if check == 1
                     disp('Collision detected in trajectory, human intervention required to remove obstruction');
@@ -571,6 +569,13 @@ classdef Dobot < handle
                 end
                 pause(0.01);
             end
+            
+            if 0 < check
+                self.stop = 1;
+            else
+                self.stop = 0;
+            end
+            
         end
         
         
