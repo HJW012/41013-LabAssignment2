@@ -68,7 +68,7 @@ classdef EnvironmentObject < handle
        function Display(self)
            self.modelMesh = trisurf(self.modelF, (self.modelV(:,1) + self.pose(1,4)), (self.modelV(:,2) + self.pose(2,4) + self.modelMidPoint(1,2)), (self.modelV(:,3) + self.pose(3,4) + self.modelMidPoint(1,3)) ...
                         ,'FaceVertexCData',self.vertexColours,'EdgeColor','interp','EdgeLighting','flat');
-           self.SetPose(self.pose * transl(0,self.modelMidPoint(1,2),self.modelMidPoint(1,3)));
+           self.SetPose(self.pose * transl(0,self.modelMidPoint(1,2),self.modelMidPoint(1,3)));         
            drawnow();
        end
        %% Set Pose - move object to new pose and display

@@ -4,8 +4,10 @@ classdef Environment < handle
        foundation;
        targets;
        deposit;
+       miscObjects;
        targetIndex = 1;
        depositIndex = 1;
+       lightCurtain;
        robot;
    end
    
@@ -15,7 +17,8 @@ classdef Environment < handle
                object = varargin{i};
                self.AddObject(object);
            end
-           
+
+           self.lightCurtain = LightCurtain(self.foundation);
        end
        %% Add generic object
        function AddObject(self, object)
@@ -64,6 +67,8 @@ classdef Environment < handle
            end
            
            self.robot.Display();
+           
+           self.lightCurtain.Display();
            
            axis equal;
            camlight;

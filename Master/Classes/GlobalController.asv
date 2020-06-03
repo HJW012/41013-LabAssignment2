@@ -112,6 +112,7 @@ classdef GlobalController < handle
                self.environment.robot.MoveArmJointAngles(self.environment.robot.jointAngles);   
            end
            
+           
            self.hand = EnvironmentObject('Type', 'misc', 'ModelPath', 'hand.ply', 'Pose', transl(-0.2, 0.45, self.environment.foundation.dimensions(1,3)+0.4), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
            self.hand.SetPose(self.hand.pose * trotz(-pi/2));
            self.hand.Display();

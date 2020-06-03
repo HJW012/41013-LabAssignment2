@@ -55,7 +55,13 @@ classdef LightCurtain < handle
        
        function checkCurtain = CheckLightCurtain(self, object)
             checkCurtain = 0;
-            v3d = object.modelMesh.Vertices;
+            v3d = zeros(size(object.modelV,1),3);
+            
+            for i = 1:size(object.modelV,1)
+                v3d(i, 1) = object.modelV(i,1) + object.pose(1,4);
+                v3d(i, 2) = object.modelV(i,2) + object.pose(2,4);
+                v3d(i, 3) = object.modelV(i,3) + object.pose(3,4);
+            end
             
             faceNormals = zeros(size(object.modelF,1),3);
             for faceIndex = 1:size(object.modelF,1)
@@ -73,17 +79,11 @@ classdef LightCurtain < handle
                     vertOnPlane = v3d(object.modelF(faceIndex,1)',:);
                     [intersectP,check] = LinePlaneIntersection(faceNormals(faceIndex,:),vertOnPlane,point1,point2); 
                     if check == 1 && IsIntersectionPointInsideTriangle(intersectP,v3d(object.modelF(faceIndex,:)',:))
-                        %plot3(intersectP(1),intersectP(2),intersectP(3),'g*');
+                        plot3(intersectP(1),intersectP(2),intersectP(3),'g*');
                         checkCurtain = 1;
-                        disp(['Intersection: ', num2str(intersectP(1)), ', ', num2str(intersectP(2)), ', ', num2str(intersectP(3))]);
-                        break;
+                        disp(['Intersection: ', num2str(intersectP(1)), nu);
                     end
                 end
-                
-                if 0 < checkCurtain
-                    break;
-                end
-                
             end
        end
    end
