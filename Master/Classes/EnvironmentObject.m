@@ -1,4 +1,4 @@
-%% Object class
+%% Environment Object Class
 classdef EnvironmentObject < handle
    properties
        type; %foundation, target1, target2, target3, deposit, misc

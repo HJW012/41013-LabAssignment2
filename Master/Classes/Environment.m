@@ -1,7 +1,7 @@
-%% Environment class - Tier 2 class to control environment - table, objects - initialised in Sumulation object
+%% Environment Class
 classdef Environment < handle
    properties
-       foundation;
+       foundation = EnvironmentObject.empty;
        targets;
        deposit;
        miscObjects;
@@ -22,13 +22,19 @@ classdef Environment < handle
                object = varargin{i};
                self.AddObject(object);
            end
-
-           self.lightCurtain = LightCurtain(self.foundation);
+           
+           if (self.lightCurtain ~= EnvironmentObject.empty)
+               self.lightCurtain = LightCurtain(self.foundation);
+           else
+               disp("Environment: No table present. Expecting table through AddObject");
+           end
+           
        end
        %% Add generic object
        function AddObject(self, object)
            if strcmp(object.type, 'foundation') 
                self.foundation = object;
+               self.lightCurtain = LightCurtain(self.foundation);
            end
            
            if strcmp(object.type, 'target')

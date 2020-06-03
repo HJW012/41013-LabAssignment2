@@ -1,4 +1,4 @@
-%% Light Curtain
+%% Light Curtain Class
 classdef LightCurtain < handle
    properties
         centre;
@@ -24,22 +24,22 @@ classdef LightCurtain < handle
 
             self.lightCurtain = [];
 
-            for y = (self.centre(1,2) - (0.5*self.tableLength)):0.02:(self.centre(1,2) + (0.5*self.tableLength))
+            for y = (self.centre(1,2) - (0.5*self.tableLength)):0.1:(self.centre(1,2) + (0.5*self.tableLength))
                 self.lightCurtain = [self.lightCurtain; x, y, self.tableHeight, x, y, z];
             end
 
             x = (self.centre(1,1) + (0.5*self.tableWidth));
-            for y = (self.centre(1,2) - (0.5*self.tableLength)):0.02:(self.centre(1,2) + (0.5*self.tableLength))
+            for y = (self.centre(1,2) - (0.5*self.tableLength)):0.1:(self.centre(1,2) + (0.5*self.tableLength))
                 self.lightCurtain = [self.lightCurtain; x, y, self.tableHeight, x, y, z];
             end
 
             y = (self.centre(1,2) - (0.5*self.tableLength));
-            for x = (self.centre(1,1) - (0.5*self.tableWidth)):0.02:(self.centre(1,1) + (0.5*self.tableWidth))
+            for x = (self.centre(1,1) - (0.5*self.tableWidth)):0.1:(self.centre(1,1) + (0.5*self.tableWidth))
                 self.lightCurtain = [self.lightCurtain; x, y, self.tableHeight, x, y, z];
             end
 
             y = (self.centre(1,2) + (0.5*self.tableLength));
-            for x = (self.centre(1,1) - (0.5*self.tableWidth)):0.02:(self.centre(1,1) + (0.5*self.tableWidth))
+            for x = (self.centre(1,1) - (0.5*self.tableWidth)):0.1:(self.centre(1,1) + (0.5*self.tableWidth))
                 self.lightCurtain = [self.lightCurtain; x, y, self.tableHeight, x, y, z];
             end
        end

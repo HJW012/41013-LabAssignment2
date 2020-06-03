@@ -31,7 +31,7 @@ camera = RGBCamera('CentrePose', transl(0, 0, 2.5) * troty(pi));
 
 % Create the Master Controller and tell it about the environment
 plc = GlobalController(environment, camera);
-
+plc.environment.Display();
 % Initialise the simulation
 plc.Init();
 
@@ -82,6 +82,13 @@ disp("Press ENTER to begin simulation");
 pause();
 
 PLC.Run();
+%% 
+if x == y
+   disp(1); 
+else
+    disp(0);
+end
+
 %% GUI Test
 close all;
 clear;

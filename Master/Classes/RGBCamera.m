@@ -1,4 +1,4 @@
-%% Object class
+%% Camera Class
 classdef RGBCamera < handle
    properties
        centrePose = transl(0, 0, 0);

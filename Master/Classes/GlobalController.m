@@ -1,4 +1,4 @@
-%% Object class
+%% Global Controller Class
 classdef GlobalController < handle
    properties
        environment;
@@ -14,6 +14,7 @@ classdef GlobalController < handle
        obstacle;
        objects;
        emergencyStop = 0;
+       targetPlacementWindow; %Window where targets can be placed within reach of Dobot - Need to implement
    end
    
    methods
@@ -253,7 +254,6 @@ classdef GlobalController < handle
        % Display the environment and calculate all the necessary target and
        % deposit locations and store them in appropriate variables
        function Init(self)
-           self.environment.Display();
            self.camera.DisplayCamera();
            
            for i = 1:size(self.environment.targets,2)
@@ -348,7 +348,9 @@ classdef GlobalController < handle
                     objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
 
                     % Update the object's position
-                    self.environment.robot.object(k).MoveObject(objectPose);
+                   %self.environment.robot.object(k).MoveObject(objectPose);
+                   self.environment.robot.object(k)
+                    self.environment.robot.MoveObject(self.environment.robot.object(k));
                end
                
                drawnow();
@@ -431,7 +433,9 @@ classdef GlobalController < handle
                     objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
 
                     % Update the object's position
-                    self.environment.robot.object(k).MoveObject(objectPose);
+                    %self.environment.robot.object(k).MoveObject(objectPose);
+                    self.environment.robot.object(k)
+                    self.environment.robot.MoveObject(self.environment.robot.object(k));
                end
                
                drawnow();
@@ -542,7 +546,9 @@ classdef GlobalController < handle
                         objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
 
                         % Update the object's position
-                        self.environment.robot.object(k).MoveObject(objectPose);
+                        %self.environment.robot.object(k).MoveObject(objectPose);
+                        self.environment.robot.object(k)
+                        self.environment.robot.MoveObject(self.environment.robot.object(k));
                    end
                   
                   drawnow();
@@ -634,7 +640,9 @@ classdef GlobalController < handle
                     objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
 
                     % Update the object's position
-                    self.environment.robot.object(k).MoveObject(objectPose);
+                    %self.environment.robot.object(k).MoveObject(objectPose);
+                    self.environment.robot.object(k)
+                    self.environment.robot.MoveObject(self.environment.robot.object(k));
                   end
                   
                   drawnow();
@@ -727,7 +735,9 @@ classdef GlobalController < handle
                     objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
 
                     % Update the object's position
-                    self.environment.robot.object(k).MoveObject(objectPose);
+                    %self.environment.robot.object(k).MoveObject(objectPose);
+                    self.environment.robot.object(k)
+                    self.environment.robot.MoveObject(self.environment.robot.object(k));
                   end
                   drawnow();
               end

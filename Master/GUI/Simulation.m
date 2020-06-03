@@ -55,7 +55,19 @@ function Simulation_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for Simulation
 handles.output = hObject;
 
-% Update handles structure
+% Set up simulation
+handles.table = EnvironmentObject('Type', 'foundation', 'ModelPath', 'table.ply', 'Pose', transl(0, 0, 0), 'Dimensions', [2.1956 1.0097 0.8911]);
+handles.blueCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'blueCrate.ply', 'Pose', transl(0.75, 0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'b');
+handles.yellowCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'yellowCrate.ply', 'Pose', transl(0.75, 0, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'y');
+handles.redCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'redCrate.ply', 'Pose', transl(0.75, -0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'r');
+handles.environment = Environment(handles.table, handles.blueCrate, handles.yellowCrate, handles.redCrate);
+handles.robot = Dobot(); %No basepose given as the linear rail will automatically update its position
+handles.robot.GenerateLinearRail([-0.45, 0, 0.8911]);
+handles.environment.AddRobot(handles.robot);
+handles.camera = RGBCamera('CentrePose', transl(0, 0, 2.5) * troty(pi));
+handles.plc = GlobalController(handles.environment, handles.camera);
+
+%{
 handles.blueCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'blueCrate.ply', 'Pose', transl(0.75, 0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'b');
 handles.yellowCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'yellowCrate.ply', 'Pose', transl(0.75, 0, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'y');
 handles.redCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'redCrate.ply', 'Pose', transl(0.75, -0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'r');
@@ -72,15 +84,19 @@ handles.camera = RGBCamera('CentrePose', transl(0, 0, 2.5) * troty(pi));
 
 % Create the Master Controller and tell it about the environment
 handles.plc = GlobalController(handles.environment, handles.camera);
+%}
 
 % Initialise the simulation
+axes(handles.axes_Simulation); %Set axes in GUI as current axes to plot all simulation objects
 hold on;
-handles.plc.Init();
+handles.plc.environment.Display();
 disp('Initialisation Complete');
 %axes(handles.axes2);
 %hold on;
 %handles.Dobot1.Display();
 %axis equal;
+
+% Update handles structure
 guidata(hObject, handles);
 
 % UIWAIT makes Simulation wait for user response (see UIRESUME)
@@ -296,9 +312,31 @@ end
 
 % --- Executes on button press in btn_InsertTarget.
 function btn_InsertTarget_Callback(hObject, eventdata, handles)
-% hObject    handle to btn_InsertTarget (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+hold on;
+targetX = str2double(get(handles.txt_TargetX, 'String'))
+targetY = str2double(get(handles.txt_TargetY, 'String'))
+targetRot = str2double(get(handles.txt_TargetRot, 'String'))
+
+if get(handles.rad_TargetRed, 'Value') == 1
+    disp('Red Pen');
+    tempObject = EnvironmentObject('Type', 'target', 'ModelPath', 'redPen.ply', 'Pose', transl(targetX, targetY, handles.plc.environment.foundation.dimensions(3)), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'r');
+    tempObject.Display();
+    tempObject.SetPose(tempObject.pose * trotz(deg2rad(targetRot)));
+    handles.plc.environment.AddObject(tempObject);
+elseif get(handles.rad_TargetBlue, 'Value') == 1
+    disp('Blue Pen');
+    tempObject = EnvironmentObject('Type', 'target', 'ModelPath', 'bluePen.ply', 'Pose', transl(targetX, targetY, handles.plc.environment.foundation.dimensions(3)), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'b');
+    tempObject.Display();
+    tempObject.SetPose(tempObject.pose * trotz(deg2rad(targetRot)));
+    handles.plc.environment.AddObject(tempObject);
+else
+    disp('Pencil');
+    tempObject = EnvironmentObject('Type', 'target', 'ModelPath', 'pencil.ply', 'Pose', transl(targetX, targetY, handles.plc.environment.foundation.dimensions(3)), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
+    tempObject.Display();
+    tempObject.SetPose(tempObject.pose * trotz(deg2rad(targetRot)));
+    handles.plc.environment.AddObject(tempObject);
+end
+guidata(hObject, handles);
 
 
 % --- Executes on button press in btn_ResetSim.
@@ -313,6 +351,7 @@ function btn_StartSim_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_StartSim (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles.plc.Init();
 handles.plc.Run();
 
 

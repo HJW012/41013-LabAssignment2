@@ -22,7 +22,7 @@ function varargout = SafetyDemo(varargin)
 
 % Edit the above text to modify the response to help SafetyDemo
 
-% Last Modified by GUIDE v2.5 03-Jun-2020 00:10:39
+% Last Modified by GUIDE v2.5 04-Jun-2020 01:08:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -56,6 +56,16 @@ function SafetyDemo_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 % Update handles structure
+id = 2; % Note: may need to be changed if multiple joysticks present
+handles.joy = vrjoystick(id);
+axes(handles.axes_Safety)
+hold on;
+handles.robot = Dobot();
+handles.robot.Display();
+EEPose1 = transl(0.23, 0, 0.1) * trotx(pi);
+q = handles.robot.model.ikcon(EEPose1, handles.robot.model.getpos);
+handles.robot.model.animate(q);
+
 guidata(hObject, handles);
 
 % UIWAIT makes SafetyDemo wait for user response (see UIRESUME)
@@ -71,3 +81,138 @@ function varargout = SafetyDemo_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
+
+
+% --- Executes on button press in check_Controller.
+function check_Controller_Callback(hObject, eventdata, handles)
+% hObject    handle to check_Controller (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of check_Controller
+
+
+% --- Executes on button press in btn_StopSign.
+function btn_StopSign_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_StopSign (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.symbolPresent = true;
+guidata(hObject, handles);
+
+
+% --- Executes on button press in btn_Retreat.
+function btn_Retreat_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_Retreat (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+pStar = [662 362 362 662; 362 362 662 662];
+P = [0.25, 0.2, 0.2, 0.25;
+     0.025, 0.025, -0.025, -0.025;
+     -0.1, -0.1, -0.1, -0.1];
+cam = CentralCamera('focal', 0.08, 'pixel', 10e-5, ...
+'resolution', [1024 1024], 'centre', [512 512],'name', 'UR10camera');
+
+q0 = handles.robot.model.getpos';
+fps = 25;
+lambda = 0.6;
+depth = mean(P(1, :));
+Tc0 = handles.robot.model.fkine(handles.robot.model.getpos);
+drawnow;
+
+cam.T = Tc0;
+cam.plot_camera('Tcam',Tc0, 'label','scale',0.015);
+spheres = plot_sphere(P, 0.005, 'b');
+
+p = cam.plot(P, 'Tcam', Tc0);
+cam.clf()
+cam.plot(pStar, '*'); % create the camera view
+cam.hold(true);
+cam.plot(P, 'Tcam', Tc0, 'o'); % create the camera view
+pause(2)
+cam.hold(true);
+cam.plot(P); 
+
+ksteps = 0;
+pressed = false;
+while (true)
+    [axes, buttons, povs] = read(handles.joy);
+    if buttons(1) && ~pressed
+       P(3, 1) = P(3, 1) + 0.02;
+       P(3, 2) = P(3, 2) + 0.02;
+       P(3, 3) = P(3, 3) + 0.02;
+       P(3, 4) = P(3, 4) + 0.02;
+       delete(spheres);
+       spheres = plot_sphere(P, 0.005, 'b');
+       pressed = true;
+    elseif ~buttons(1)
+        pressed = false;
+    end
+    uv = cam.plot(P)
+        
+        % compute image plane error as a column
+        e = pStar-uv   % feature error
+        e = e(:);
+        Zest = []
+        % compute the Jacobian
+        if isempty(depth)
+            % exact depth from simulation (not possible in practice)
+            pt = homtrans(inv(Tcam), P)
+            J = cam.visjac_p(uv, pt(3,:) );
+        elseif ~isempty(Zest)
+            J = cam.visjac_p(uv, Zest);
+        else
+            disp('here');
+            J = cam.visjac_p(uv, depth )
+        end
+
+        % compute the velocity of camera in camera frame
+        try
+            v = lambda * pinv(J) * e;
+        catch
+            status = -1;
+            return
+        end
+        fprintf('v: %.3f %.3f %.3f %.3f %.3f %.3f\n', v);
+
+        %compute robot's Jacobian and inverse
+        J2 = handles.robot.model.jacobn(q0);
+        Jinv = pinv(J2);
+        % get joint velocities
+        qp = Jinv*v;
+
+         
+         %Maximum angular velocity cannot exceed 180 degrees/s
+         ind=find(qp>pi);
+         if ~isempty(ind)
+             qp(ind)=pi;
+         end
+         ind=find(qp<-pi);
+         if ~isempty(ind)
+             qp(ind)=-pi;
+         end
+
+        %Update joints 
+        q = q0 + (1/fps)*qp;
+        handles.robot.model.animate(q');
+
+        %Get camera location
+        Tc = handles.robot.model.fkine(q);
+        cam.T = Tc;
+
+        drawnow
+
+
+         pause(1/fps)
+
+        if ~isempty(200) && (ksteps > 200)
+            break;
+        end
+        
+        %update current joint position
+        q0 = q;
+end
+ 
+guidata(hObject, handles);
