@@ -11,6 +11,7 @@ classdef GlobalController < handle
        camera;
        robot;
        hand;
+       obstacle;
        objects;
        emergencyStop = 0;
    end
@@ -79,12 +80,12 @@ classdef GlobalController < handle
                if targetPose(2,4) < self.environment.robot.model.base(2,4)
                    waypoint = deg2rad([-90, 60, 65, -35, 0]);
                    self.MoveRobotArmJointAngles(waypoint);
-                   targetPose = self.redTargetLocations(:,:,i) * trotx(pi) * trotz(deg2rad(80));
+                   targetPose = self.redTargetLocations(:,:,i) * trotx(pi));
 
                else
                    waypoint = deg2rad([90, 60, 65, -35, 0]);
                    self.MoveRobotArmJointAngles(waypoint);
-                   targetPose = self.redTargetLocations(:,:,i) * trotz(deg2rad(80)) * trotx(pi);
+                   targetPose = self.redTargetLocations(:,:,i) * trotx(pi);
                end
 
                self.MoveRobotArm(targetPose);
@@ -124,9 +125,9 @@ classdef GlobalController < handle
 
 
                   
-           obstacle = EnvironmentObject('Type', 'obstacle', 'ModelPath', 'obstacleCube.ply', 'Pose', transl(0, 0, table.dimensions(1,3) + 0.2), 'Dimensions', [0.1 0.1 0.1], 'GeneralColour', 'y');
-           obstacle.Display();
-           self.environment.AddObject(obstacle);
+           self.obstacle = EnvironmentObject('Type', 'obstacle', 'ModelPath', 'obstacleBall.ply', 'Pose', transl(0, 0, self.environment.foundation.dimensions(1,3) + 0.2), 'Dimensions', [0.1 0.1 0.1], 'GeneralColour', 'y');
+           self.obstacle.Display();
+           self.environment.AddObject(self.obstacle);
            
            
            
@@ -151,12 +152,12 @@ classdef GlobalController < handle
                if targetPose(2,4) < self.environment.robot.model.base(2,4)
                    waypoint = deg2rad([-90, 60, 65, -35, 0]);
                    self.MoveRobotArmJointAngles(waypoint);
-                   targetPose = self.greenTargetLocations(:,:,i) * trotx(pi) * trotz(deg2rad(80));
+                   targetPose = self.greenTargetLocations(:,:,i) * trotx(pi));
 
                else
                    waypoint = deg2rad([90, 60, 65, -35, 0]);
                    self.MoveRobotArmJointAngles(waypoint);
-                   targetPose = self.greenTargetLocations(:,:,i) * trotz(deg2rad(80)) * trotx(pi);
+                   targetPose = self.greenTargetLocations(:,:,i) * trotx(pi);
 
                end
 
@@ -210,7 +211,7 @@ classdef GlobalController < handle
                if targetPose(2,4) < self.environment.robot.model.base(2,4)
                    waypoint = deg2rad([-90, 60, 65, -35, 0]);
                    self.MoveRobotArmJointAngles(waypoint);
-                   targetPose = self.blueTargetLocations(:,:,i) * trotx(pi) * trotz(deg2rad(80));
+                   targetPose = self.blueTargetLocations(:,:,i) * trotx(pi) * g2rad(80));
 
                else
                    waypoint = deg2rad([90, 60, 65, -35, 0]);
@@ -278,9 +279,6 @@ classdef GlobalController < handle
        %% Move Arm
         function MoveRobotArm(self, targetPose)
             q0 = self.environment.robot.model.getpos;
-
-            %EEPose1 = targetPose
-            %q1 = self.GenerateTargetJointAngles2(self.model.base, EEPose1)
             
             q1 = self.environment.robot.model.ikcon(targetPose, q0);
             
@@ -304,10 +302,9 @@ classdef GlobalController < handle
                     end
                 end
             end
-            
-            while (self.environment.robot.collisionDetection == 1)
+            while (self.environment.robot.collisionDetected == 1)
                self.environment.robot.collisionDetected = 0;   
-               for j = 1:size(self.environment.checkObjects, 2)
+               for j = 1:size(self.environment.obstacleObjects, 2)
                    checkCollision = self.environment.robot.CollisionCheck(qMatrix, self.environment.obstacleObjects{j}.modelMesh.Vertices);
 
                    if checkCollision == 1
@@ -361,8 +358,6 @@ classdef GlobalController < handle
         %% Move Arm Joint Angles
         function MoveRobotArmJointAngles(self, targetAngles)
             q0 = self.environment.robot.model.getpos;
-
-            %q1 = self.GenerateTargetJointAngles2(self.model.base, EEPose1)
             
             q1 = targetAngles;
             
@@ -375,6 +370,32 @@ classdef GlobalController < handle
             for i = 1:steps
                 qMatrix(i,:) = (1-s(i))*q0 + s(i)*q1;
             end
+            
+            if 0 < size(self.environment.obstacleObjects, 2)
+                for i = 1:1:size(self.environment.obstacleObjects, 2)
+                    checkCollision = self.environment.robot.CollisionCheck(qMatrix, self.environment.obstacleObjects{i}.modelMesh.Vertices);
+                    
+                    if checkCollision == 1
+                        self.environment.robot.collisionDetected = 1;
+                        break;
+                    end
+                end
+            end
+            
+            while (self.environment.robot.collisionDetected == 1)
+               self.environment.robot.collisionDetected = 0;   
+               for j = 1:size(self.environment.obstacleObjects, 2)
+                   checkCollision = self.environment.robot.CollisionCheck(qMatrix, self.environment.obstacleObjects{j}.modelMesh.Vertices);
+
+                   if checkCollision == 1
+                      self.environment.robot.collisionDetected = 1;
+                      break;
+                   end
+               end
+               pause(0.01);
+            end
+            
+            
 
             for i = 1:steps
                self.environment.robot.stop = 0;
@@ -425,6 +446,56 @@ classdef GlobalController < handle
             
            if (((self.environment.robot.linearRailPose(1,4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robot.baseWidth/2) <= x) && (x + self.environment.robot.baseWidth/2 <= (self.environment.robot.linearRailPose(1,4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robot.linearRailTravelDist)))
               increment = distanceToTravel/steps;
+              startingPosition = self.environment.robot.model.base(1,4);
+              
+              if 0 < size(self.environment.obstacleObjects, 2)
+                  for i = 1:1:size(self.environment.obstacleObjects, 2)
+                      for j = 1:steps
+                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
+
+                        if checkCollision == 1
+                            self.environment.robot.collisionDetected = 1;
+                            break;
+                        end
+                      end
+                      
+                      self.environment.robot.model.base(1,4) = startingPosition;
+                      
+                      if 0 < self.environment.robot.collisionDetected
+                          break;
+                      end
+                  end
+              end
+              
+              tic;
+              while (self.environment.robot.collisionDetected == 1)
+                   self.environment.robot.collisionDetected = 0;   
+                   for i = 1:1:size(self.environment.obstacleObjects, 2)
+                       for j = 1:steps
+                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
+
+                        if checkCollision == 1
+                            self.environment.robot.collisionDetected = 1;
+                            break;
+                        end
+                      end
+                      
+                      self.environment.robot.model.base(1,4) = startingPosition;
+                      
+                      if 0 < self.environment.robot.collisionDetected
+                          break;
+                      end
+                   end
+                   
+                   if toc >= 15
+                      self.obstacle.Remove();
+                      self.environment.obstacleObjects{1}.pose = self.obstacle.pose;
+                   end
+                   pause(0.01);
+              end
+             
               for i = 1:steps
                    self.environment.robot.stop = 0;
                    if 0 < size(self.environment.checkObjects, 2)
@@ -483,6 +554,50 @@ classdef GlobalController < handle
               distance = (self.environment.robot.linearRailPose(1, 4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robotbaseWidth/2) - self.environment.robot.model.base(1,4);
               increment = distance/steps;
               
+              startingPosition = self.environment.robot.model.base(1,4);
+              
+              if 0 < size(self.environment.obstacleObjects, 2)
+                  for i = 1:1:size(self.environment.obstacleObjects, 2)
+                      for j = 1:steps
+                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
+
+                        if checkCollision == 1
+                            self.environment.robot.collisionDetected = 1;
+                            break;
+                        end
+                      end
+                      
+                      self.environment.robot.model.base(1,4) = startingPosition;
+                      
+                      if 0 < self.environment.robot.collisionDetected
+                          break;
+                      end
+                  end
+              end
+              
+              while (self.environment.robot.collisionDetected == 1)
+                   self.environment.robot.collisionDetected = 0;   
+                   for i = 1:1:size(self.environment.obstacleObjects, 2)
+                       for j = 1:steps
+                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
+
+                        if checkCollision == 1
+                            self.environment.robot.collisionDetected = 1;
+                            break;
+                        end
+                      end
+                      
+                      self.environment.robot.model.base(1,4) = startingPosition;
+                      
+                      if 0 < self.environment.robot.collisionDetected
+                          break;
+                      end
+                   end
+                   pause(0.01);
+              end
+              
               for i = 1:steps
                    self.environment.robot.stop = 0;
                    if 0 < size(self.environment.checkObjects, 2)
@@ -530,6 +645,50 @@ classdef GlobalController < handle
            if (x + self.environment.robot.baseWidth/2 > (self.environment.robot.linearRailPose(1,4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robot.linearRailTravelDist))
               distance = (self.environment.robot.linearRailPose(1, 4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robot.linearRailTravelDist + self.environment.robot.baseWidth/2) - self.environment.robot.model.base(1,4);
               increment = distance/steps;
+              
+              startingPosition = self.environment.robot.model.base(1,4);
+              
+              if 0 < size(self.environment.obstacleObjects, 2)
+                  for i = 1:1:size(self.environment.obstacleObjects, 2)
+                      for j = 1:steps
+                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
+
+                        if checkCollision == 1
+                            self.environment.robot.collisionDetected = 1;
+                            break;
+                        end
+                      end
+                      
+                      self.environment.robot.model.base(1,4) = startingPosition;
+                      
+                      if 0 < self.environment.robot.collisionDetected
+                          break;
+                      end
+                  end
+              end
+              
+              while (self.environment.robot.collisionDetected == 1)
+                   self.environment.robot.collisionDetected = 0;   
+                   for i = 1:1:size(self.environment.obstacleObjects, 2)
+                       for j = 1:steps
+                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
+
+                        if checkCollision == 1
+                            self.environment.robot.collisionDetected = 1;
+                            break;
+                        end
+                      end
+                      
+                      self.environment.robot.model.base(1,4) = startingPosition;
+                      
+                      if 0 < self.environment.robot.collisionDetected
+                          break;
+                      end
+                   end
+                   pause(0.01);
+              end
               
               for i = 1:steps
                    self.environment.robot.stop = 0;
