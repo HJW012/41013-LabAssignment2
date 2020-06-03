@@ -77,5 +77,12 @@ classdef EnvironmentObject < handle
            updatedPoints = [self.pose * [self.modelV, ones(self.vertexCount, 1)]']';
            self.modelMesh.Vertices = updatedPoints(:, 1:3);
        end
+       %% Remove object
+       function Remove(self)
+          self.SetPose(transl(0, 0, 0));
+          self.modelMesh.FaceAlpha = 0;
+          self.modelMesh.EdgeAlpha = 0;
+          self.modelData.vertex.alpha(:) = 0;
+       end
    end
 end

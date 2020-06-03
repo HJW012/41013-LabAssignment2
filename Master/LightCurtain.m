@@ -55,13 +55,30 @@ classdef LightCurtain < handle
        
        function checkCurtain = CheckLightCurtain(self, object)
             checkCurtain = 0;
-            v3d = object.modelMesh.Vertices;
+<<<<<<< HEAD
+            v3d = convhull(object.modelMesh.Vertices);
+=======
+            %v3d = object.modelMesh.Vertices;
+            %faceNormals = zeros(size(object.modelF,1),3);
+>>>>>>> 7a4803a0a50be5236b960c30e48463bc089331a1
             
-            faceNormals = zeros(size(object.modelF,1),3);
+            [k, volume] = convhull(object.modelMesh.Vertices(:, 1), object.modelMesh.Vertices(:, 2), object.modelMesh.Vertices(:, 3)); 
+            tr = triangulation(k, object.modelMesh.Vertices(:, 1), object.modelMesh.Vertices(:, 2), object.modelMesh.Vertices(:, 3)); 
+            tempModelF = tr.ConnectivityList;
+            tempModelV = tr.Points;
+            faceNormals = zeros(size(tempModelF,1),3);
+           %{
             for faceIndex = 1:size(object.modelF,1)
                 v1 = v3d(object.modelF(faceIndex,1)',:);
                 v2 = v3d(object.modelF(faceIndex,2)',:);
                 v3 = v3d(object.modelF(faceIndex,3)',:);
+                faceNormals(faceIndex,:) = unit(cross(v2-v1,v3-v1));
+            end
+            %}
+            for faceIndex = 1:size(tempModelF,1)
+                v1 = tempModelV(tempModelF(faceIndex,1)',:);
+                v2 = tempModelV(tempModelF(faceIndex,2)',:);
+                v3 = tempModelV(tempModelF(faceIndex,3)',:);
                 faceNormals(faceIndex,:) = unit(cross(v2-v1,v3-v1));
             end
             
@@ -69,10 +86,10 @@ classdef LightCurtain < handle
                 point1 = [self.lightCurtain(i,1), self.lightCurtain(i,2), self.lightCurtain(i,3)];
                 point2 = [self.lightCurtain(i,4), self.lightCurtain(i,5), self.lightCurtain(i,6)];
                 
-                for faceIndex = 1:size(object.modelF,1)
-                    vertOnPlane = v3d(object.modelF(faceIndex,1)',:);
+                for faceIndex = 1:size(tempModelF,1)
+                    vertOnPlane = tempModelV(tempModelF(faceIndex,1)',:);
                     [intersectP,check] = LinePlaneIntersection(faceNormals(faceIndex,:),vertOnPlane,point1,point2); 
-                    if check == 1 && IsIntersectionPointInsideTriangle(intersectP,v3d(object.modelF(faceIndex,:)',:))
+                    if check == 1 && IsIntersectionPointInsideTriangle(intersectP,tempModelV(tempModelF(faceIndex,:)',:))
                         %plot3(intersectP(1),intersectP(2),intersectP(3),'g*');
                         checkCurtain = 1;
                         disp(['Intersection: ', num2str(intersectP(1)), ', ', num2str(intersectP(2)), ', ', num2str(intersectP(3))]);

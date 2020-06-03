@@ -291,7 +291,7 @@ classdef GlobalController < handle
                self.environment.robot.stop = 0;
                if 0 < size(self.environment.checkObjects, 2)
                    for j = 1:size(self.environment.checkObjects, 2)
-                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
 
                        if checkCurtain == 1
                           self.environment.robot.stop = 1;
@@ -299,12 +299,13 @@ classdef GlobalController < handle
                        end
                    end
                end
-               
                while (self.environment.robot.stop == 1)
                    disp('Robot Stopped');
                    self.environment.robot.stop = 0;
+                   
+                   
                    for j = 1:size(self.environment.checkObjects, 2)
-                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
 
                        if checkCurtain == 1
                           self.environment.robot.stop = 1;
@@ -350,7 +351,7 @@ classdef GlobalController < handle
                self.environment.robot.stop = 0;
                if 0 < size(self.environment.checkObjects, 2)
                    for j = 1:size(self.environment.checkObjects, 2)
-                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
 
                        if checkCurtain == 1
                           self.environment.robot.stop = 1;
@@ -363,7 +364,7 @@ classdef GlobalController < handle
                    disp('Robot Stopped');
                    self.environment.robot.stop = 0;
                    for j = 1:size(self.environment.checkObjects, 2)
-                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
 
                        if checkCurtain == 1
                           self.environment.robot.stop = 1;
@@ -399,7 +400,7 @@ classdef GlobalController < handle
                    self.environment.robot.stop = 0;
                    if 0 < size(self.environment.checkObjects, 2)
                        for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
 
                            if checkCurtain == 1
                               self.environment.robot.stop = 1;
@@ -407,17 +408,28 @@ classdef GlobalController < handle
                            end
                        end
                    end
-
+                   
+                   tic;
+                   index = 0;
                    while (self.environment.robot.stop == 1)
                        disp('Robot Stopped');
                        self.environment.robot.stop = 0;
                        for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
-
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
+                           
+                           if (self.environment.checkObjects{j}.pose == self.hand.pose)
+                               index = j;
+                           end
+                           
+                           
                            if checkCurtain == 1
                               self.environment.robot.stop = 1;
                               break;
                            end
+                       end
+                       if toc >= 5
+                          self.hand.Remove();
+                          self.environment.checkObjects{index}.pose = self.hand.pose;
                        end
                        pause(0.01);
                    end
@@ -446,7 +458,7 @@ classdef GlobalController < handle
                    self.environment.robot.stop = 0;
                    if 0 < size(self.environment.checkObjects, 2)
                        for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
 
                            if checkCurtain == 1
                               self.environment.robot.stop = 1;
@@ -459,7 +471,7 @@ classdef GlobalController < handle
                        disp('Robot Stopped');
                        self.environment.robot.stop = 0;
                        for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
 
                            if checkCurtain == 1
                               self.environment.robot.stop = 1;
@@ -494,7 +506,7 @@ classdef GlobalController < handle
                    self.environment.robot.stop = 0;
                    if 0 < size(self.environment.checkObjects, 2)
                        for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
 
                            if checkCurtain == 1
                               self.environment.robot.stop = 1;
@@ -507,7 +519,7 @@ classdef GlobalController < handle
                        disp('Robot Stopped');
                        self.environment.robot.stop = 0;
                        for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{i});
+                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
 
                            if checkCurtain == 1
                               self.environment.robot.stop = 1;
