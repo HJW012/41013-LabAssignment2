@@ -9,7 +9,7 @@ pause(3);
 % Create all the objects in the environment
 table = EnvironmentObject('Type', 'foundation', 'ModelPath', 'table.ply', 'Pose', transl(0, 0, 0), 'Dimensions', [2.1956 1.0097 0.8911], 'GeneralColour', 'r');
 blueCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'blueCrate.ply', 'Pose', transl(0.75, 0.2, table.dimensions(1,3)), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'b');
-yellowCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'yellowCrate.ply', 'Pose', transl(0.75, 0, table.dimensions(1,3)), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'y');
+yellowCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'yellowCrate.ply', 'Pose', transl(0.75, 0, table.dimensions(1,3)), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'g');
 redCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'redCrate.ply', 'Pose', transl(0.75, -0.2, table.dimensions(1,3)), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'r');
 redPen = EnvironmentObject('Type', 'target', 'ModelPath', 'redPen.ply', 'Pose', transl(0.45, 0.25, table.dimensions(1,3)), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'r');
 bluePen = EnvironmentObject('Type', 'target', 'ModelPath', 'bluePen.ply', 'Pose', transl(0, -0.2, table.dimensions(1,3)), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'b');

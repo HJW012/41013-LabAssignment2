@@ -22,7 +22,7 @@ function varargout = Simulation(varargin)
 
 % Edit the above text to modify the response to help Simulation
 
-% Last Modified by GUIDE v2.5 03-Jun-2020 00:32:27
+% Last Modified by GUIDE v2.5 04-Jun-2020 16:11:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -56,47 +56,44 @@ function Simulation_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 % Set up simulation
+try
+    stop(handles.t);
+    delete(handles.t);
+end
+
+handles.EStopPress = false;
 handles.table = EnvironmentObject('Type', 'foundation', 'ModelPath', 'table.ply', 'Pose', transl(0, 0, 0), 'Dimensions', [2.1956 1.0097 0.8911]);
 handles.blueCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'blueCrate.ply', 'Pose', transl(0.75, 0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'b');
-handles.yellowCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'yellowCrate.ply', 'Pose', transl(0.75, 0, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'y');
+handles.yellowCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'yellowCrate.ply', 'Pose', transl(0.75, 0, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'g');
 handles.redCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'redCrate.ply', 'Pose', transl(0.75, -0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'r');
 handles.environment = Environment(handles.table, handles.blueCrate, handles.yellowCrate, handles.redCrate);
 handles.robot = Dobot(); %No basepose given as the linear rail will automatically update its position
 handles.robot.GenerateLinearRail([-0.45, 0, 0.8911]);
 handles.environment.AddRobot(handles.robot);
 handles.camera = RGBCamera('CentrePose', transl(0, 0, 2.5) * troty(pi));
+handles.txt_TargetZ.String = sprintf("%.3f", handles.table.dimensions(3));
 handles.plc = GlobalController(handles.environment, handles.camera);
-
-%{
-handles.blueCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'blueCrate.ply', 'Pose', transl(0.75, 0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'b');
-handles.yellowCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'yellowCrate.ply', 'Pose', transl(0.75, 0, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'y');
-handles.redCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'redCrate.ply', 'Pose', transl(0.75, -0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'r');
-handles.redPen = EnvironmentObject('Type', 'target', 'ModelPath', 'redPen.ply', 'Pose', transl(0.45, 0.25, 0.8911), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'r');
-handles.bluePen = EnvironmentObject('Type', 'target', 'ModelPath', 'bluePen.ply', 'Pose', transl(0, -0.2, 0.8911), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'b');
-handles.pencil1 = EnvironmentObject('Type', 'target', 'ModelPath', 'pencil.ply', 'Pose', transl(0.15, 0.2, 0.8911), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
-handles.pencil2 = EnvironmentObject('Type', 'target', 'ModelPath', 'pencil.ply', 'Pose', transl(-0.15, -0.25, 0.8911), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
-handles.table = EnvironmentObject('Type', 'foundation', 'ModelPath', 'table.ply', 'Pose', transl(0, 0, 0), 'Dimensions', [2.1956 1.0097 0.8911], 'GeneralColour', 'r');
-handles.environment = Environment(handles.blueCrate, handles.yellowCrate, handles.redCrate, handles.redPen, handles.bluePen, handles.pencil1, handles.pencil2, handles.table);
-handles.Dobot1 = Dobot('BasePose', eye(4)*transl(0,0,handles.table.dimensions(1,3)));
-handles.Dobot1.GenerateLinearRail([-0.45,0,0.8911]);
-handles.environment.AddRobot(handles.Dobot1);
-handles.camera = RGBCamera('CentrePose', transl(0, 0, 2.5) * troty(pi));
-
-% Create the Master Controller and tell it about the environment
-handles.plc = GlobalController(handles.environment, handles.camera);
-%}
+handles.btn_InsertObstacle.Enable = 'off';
+handles.btn_RemoveObstacle.Enable = 'off';
+handles.btn_InsertObstruction.Enable = 'off';
+handles.btn_RemoveObstruction.Enable = 'off';
+handles.btn_RemoveObstruction.Enable = 'off';
+handles.btn_EStop.Enable = 'off';
 
 % Initialise the simulation
 axes(handles.axes_Simulation); %Set axes in GUI as current axes to plot all simulation objects
 hold on;
+
+
+
 handles.plc.environment.Display();
 disp('Initialisation Complete');
-%axes(handles.axes2);
-%hold on;
-%handles.Dobot1.Display();
-%axis equal;
 
 % Update handles structure
+pause(3);
+handles.timer = timer('TimerFcn', {@timer_callback, handles.figure1}, 'ExecutionMode', 'fixedRate', 'Period', 0.5, 'StartDelay', 4);
+%start(handles.timer);
+
 guidata(hObject, handles);
 
 % UIWAIT makes Simulation wait for user response (see UIRESUME)
@@ -119,6 +116,16 @@ function btn_EStop_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_EStop (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if handles.EStopPress
+    disp("EStop Released");
+    handles.plc.emergencyStop = 0;
+else
+    disp("EStop Pressed");
+    handles.plc.emergencyStop = 1;
+end
+
+handles.EStopPress = ~handles.EStopPress
+guidata(hObject, handles);
 
 
 % --- Executes on button press in btn_InsertObstruction.
@@ -126,6 +133,14 @@ function btn_InsertObstruction_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_InsertObstruction (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles.plc.hand = EnvironmentObject('Type', 'misc', 'ModelPath', 'hand.ply', 'Pose', transl(-0.2, 0.45, handles.plc.environment.foundation.dimensions(1,3)+0.4), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
+handles.plc.hand.SetPose(handles.plc.hand.pose * trotz(-pi/2));
+handles.plc.hand.Display();
+
+handles.plc.environment.AddObject(handles.plc.hand);  
+
+guidata(hObject, handles);
+
 
 
 % --- Executes on button press in btn_RemoveObstruction.
@@ -133,6 +148,8 @@ function btn_RemoveObstruction_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_RemoveObstruction (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles.plc.hand.Remove();
+guidata(hObject, handles);
 
 
 
@@ -209,14 +226,22 @@ function btn_RemoveObstacle_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_RemoveObstacle (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+handles.plc.obstacle.Remove();
+handles.plc.environment.obstacleObjects{1}.pose = handles.plc.obstacle.pose;
+guidata(hObject, handles);
 
 % --- Executes on button press in btn_InsertObstacle.
 function btn_InsertObstacle_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_InsertObstacle (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+obstacleX = str2double(handles.txt_ObstacleX.String);
+obstacleY = str2double(handles.txt_ObstacleY.String);
+obstacleZ = str2double(handles.txt_ObstacleZ.String);
+handles.plc.obstacle = EnvironmentObject('Type', 'obstacle', 'ModelPath', 'obstacleBall.ply', 'Pose', transl(obstacleX, obstacleY, obstacleZ), 'Dimensions', [0.1 0.1 0.1], 'GeneralColour', 'y');
+handles.plc.obstacle.Display();
+handles.plc.environment.AddObject(handles.plc.obstacle);
+guidata(hObject, handles);
 
 
 function txt_TargetX_Callback(hObject, eventdata, handles)
@@ -331,7 +356,7 @@ elseif get(handles.rad_TargetBlue, 'Value') == 1
     handles.plc.environment.AddObject(tempObject);
 else
     disp('Pencil');
-    tempObject = EnvironmentObject('Type', 'target', 'ModelPath', 'pencil.ply', 'Pose', transl(targetX, targetY, handles.plc.environment.foundation.dimensions(3)), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
+    tempObject = EnvironmentObject('Type', 'target', 'ModelPath', 'pencil.ply', 'Pose', transl(targetX, targetY, handles.plc.environment.foundation.dimensions(3)), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'g');
     tempObject.Display();
     tempObject.SetPose(tempObject.pose * trotz(deg2rad(targetRot)));
     handles.plc.environment.AddObject(tempObject);
@@ -343,16 +368,24 @@ guidata(hObject, handles);
 function btn_ResetSim_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_ResetSim (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% handles    structure with handles and user data (see GUIDATA
+guidata(hObject, handles);
 
 
 % --- Executes on button press in btn_StartSim.
 function btn_StartSim_Callback(hObject, eventdata, handles)
-% hObject    handle to btn_StartSim (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+handles.btn_InsertObstacle.Enable = 'on';
+handles.btn_RemoveObstacle.Enable = 'on';
+handles.btn_InsertObstruction.Enable = 'on';
+handles.btn_RemoveObstruction.Enable = 'on';
+handles.btn_RemoveObstruction.Enable = 'on';
+handles.btn_EStop.Enable = 'on';
+handles.btn_StartSim.Enable = 'off';
 handles.plc.Init();
 handles.plc.Run();
+
+
+guidata(hObject, handles);
 
 
 % --- Executes on button press in btn_StopSim.
@@ -360,3 +393,32 @@ function btn_StopSim_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_StopSim (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+function timer_callback(~, ~, hFigure)
+handles = guidata(hFigure);
+set(0, 'currentfigure', hFigure);
+handles.environment.robot.model.getpos
+%{
+orient = tr2rpy(EEPose, 'deg');
+disp('test1');
+set(handles.txt_EEPX, 'String', sprintf('%.3f', EEPose(1, 4)));
+disp('test 2');
+set(handles.txt_EEPY, 'String', sprintf('%.3f', EEPose(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf('%.3f', EEPose(3, 4)));
+set(handles.txt_EERR, 'String', sprintf('%.3f', orient(1)));
+set(handles.txt_EERP, 'String', sprintf('%.3f', orient(2)));
+set(handles.txt_EERY, 'String', sprintf('%.3f', orient(3)));
+%}
+
+
+
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+stop(handles.timer);
+delete(handles.timer);
+delete(hObject);

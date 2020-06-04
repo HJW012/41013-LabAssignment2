@@ -22,7 +22,7 @@ function varargout = AdvancedTeach(varargin)
 
 % Edit the above text to modify the response to help AdvancedTeach
 
-% Last Modified by GUIDE v2.5 02-Jun-2020 23:49:26
+% Last Modified by GUIDE v2.5 04-Jun-2020 23:18:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,6 +55,8 @@ function AdvancedTeach_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for AdvancedTeach
 handles.output = hObject;
 
+
+
 id = 2; % Note: may need to be changed if multiple joysticks present
 handles.joy = vrjoystick(id);
 
@@ -62,8 +64,42 @@ handles.robot = Dobot('BasePose', transl(0, 0, 0));
 handles.robot.GenerateLinearRail([0,0,0]);
 hold on;
 handles.robot.Display;
-handles.robot.model.base
+handles.teachDist = 0.002;
+set(handles.slider_q1, 'min', rad2deg(handles.robot.model.qlim(1, 1)));
+set(handles.slider_q1, 'max', rad2deg(handles.robot.model.qlim(1, 2)));
+set(handles.slider_q2, 'min', rad2deg(handles.robot.model.qlim(2, 1)));
+set(handles.slider_q2, 'max', rad2deg(handles.robot.model.qlim(2, 2)));
+set(handles.slider_q3, 'min', rad2deg(handles.robot.model.qlim(3, 1)));
+set(handles.slider_q3, 'max', rad2deg(handles.robot.model.qlim(3, 2)));
+set(handles.slider_q4, 'min', rad2deg(handles.robot.model.qlim(4, 1)));
+set(handles.slider_q4, 'max', rad2deg(handles.robot.model.qlim(4, 2)));
+set(handles.slider_q5, 'min', rad2deg(handles.robot.model.qlim(5, 1)));
+set(handles.slider_q5, 'max', rad2deg(handles.robot.model.qlim(5, 2)));
+set(handles.slider_LR, 'min', 0);
+set(handles.slider_LR, 'max', handles.robot.linearRailTravelDist);
 
+localQ0 = rad2deg(handles.robot.model.getpos);
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+handles.startingBase = handles.robot.model.base;
+
+%UpdateFields(hObject, eventdata, handles);
 % Update handles structure
 guidata(hObject, handles);
 
@@ -90,6 +126,35 @@ function slider_LR_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+localQ0 = handles.robot.model.getpos;
+LRValue = handles.slider_LR.Value;
+handles.robot.model.base = handles.startingBase * transl(LRValue, 0, 0);
+
+handles.robot.model.animate(localQ0);
+
+localQ0 = rad2deg(handles.robot.model.getpos);
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+set(handles.txt_LRX, 'String', sprintf("%.3f", LRValue));
+
+guidata(hObject, handles);
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -112,6 +177,34 @@ function txt_LRX_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txt_LRX as text
 %        str2double(get(hObject,'String')) returns contents of txt_LRX as a double
+localQ0 = handles.robot.model.getpos;
+LRValue = str2double(handles.txt_LRX.String);
+handles.robot.model.base = handles.startingBase * transl(LRValue, 0, 0);
+
+handles.robot.model.animate(localQ0);
+
+localQ0 = rad2deg(handles.robot.model.getpos);
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+set(handles.slider_LR, 'Value', LRValue);
+
+guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -132,20 +225,99 @@ function btn_JogXPos_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogXPos (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+localQ0 = handles.robot.model.getpos;
+EEPose0 = handles.robot.model.fkine(localQ0);
+EEPose1 = EEPose0 * transl(handles.teachDist, 0, 0);
+localQ1 = handles.robot.model.ikcon(EEPose1, localQ0);
+handles.robot.model.animate(localQ1);
 
+localQ0 = rad2deg(handles.robot.model.getpos);
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 % --- Executes on button press in btn_JogXNeg.
 function btn_JogXNeg_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogXNeg (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+localQ0 = handles.robot.model.getpos;
+EEPose0 = handles.robot.model.fkine(localQ0);
+EEPose1 = EEPose0 * transl(-handles.teachDist, 0, 0);
+localQ1 = handles.robot.model.ikcon(EEPose1, localQ0);
+handles.robot.model.animate(localQ1);
 
+localQ0 = rad2deg(handles.robot.model.getpos);
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 % --- Executes on button press in btn_JogYPos.
 function btn_JogYPos_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogYPos (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+localQ0 = handles.robot.model.getpos;
+EEPose0 = handles.robot.model.fkine(localQ0);
+EEPose1 = EEPose0 * transl(0, handles.teachDist, 0);
+localQ1 = handles.robot.model.ikcon(EEPose1, localQ0);
+handles.robot.model.animate(localQ1);
+
+localQ0 = rad2deg(handles.robot.model.getpos);
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 
 % --- Executes on button press in btn_JogYNeg.
@@ -153,21 +325,99 @@ function btn_JogYNeg_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogYNeg (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+localQ0 = handles.robot.model.getpos;
+EEPose0 = handles.robot.model.fkine(localQ0);
+EEPose1 = EEPose0 * transl(0, -handles.teachDist, 0);
+localQ1 = handles.robot.model.ikcon(EEPose1, localQ0);
+handles.robot.model.animate(localQ1);
 
+localQ0 = rad2deg(handles.robot.model.getpos);
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 % --- Executes on button press in btn_JogZPos.
 function btn_JogZPos_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogZPos (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+localQ0 = handles.robot.model.getpos;
+EEPose0 = handles.robot.model.fkine(localQ0);
+EEPose1 = EEPose0 * transl(0, 0, -handles.teachDist);
+localQ1 = handles.robot.model.ikcon(EEPose1, localQ0);
+handles.robot.model.animate(localQ1);
 
+localQ0 = rad2deg(handles.robot.model.getpos);
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0))
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 % --- Executes on button press in btn_JogZNeg.
 function btn_JogZNeg_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogZNeg (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+localQ0 = handles.robot.model.getpos;
+EEPose0 = handles.robot.model.fkine(localQ0);
+EEPose1 = EEPose0 * transl(0, 0, handles.teachDist);
+localQ1 = handles.robot.model.ikcon(EEPose1, localQ0);
+handles.robot.model.animate(localQ1);
 
+localQ0 = rad2deg(handles.robot.model.getpos);
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 
 function txt_invX_Callback(hObject, eventdata, handles)
@@ -216,18 +466,18 @@ end
 
 
 
-function Z_Callback(hObject, eventdata, handles)
-% hObject    handle to Z (see GCBO)
+function txt_invZ_Callback(hObject, eventdata, handles)
+% hObject    handle to txt_invZ (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of Z as text
-%        str2double(get(hObject,'String')) returns contents of Z as a double
+% Hints: get(hObject,'String') returns contents of txt_invZ as text
+%        str2double(get(hObject,'String')) returns contents of txt_invZ as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function Z_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Z (see GCBO)
+function txt_invZ_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txt_invZ (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -243,6 +493,32 @@ function btn_inverse_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_inverse (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+EEPose = transl(str2double(handles.txt_invX.String), str2double(handles.txt_invY.String), str2double(handles.txt_invZ.String)) * trotx(pi);
+q0 = handles.robot.model.getpos;
+q1 = handles.robot.model.ikcon(EEPose, q0);
+handles.robot.model.animate(q1);
+
+localQ0 = rad2deg(handles.robot.model.getpos);
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 
 % --- Executes on slider movement.
@@ -254,6 +530,31 @@ function slider_q1_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
+localQ0 = rad2deg(handles.robot.model.getpos);
+localQ0(1) = handles.slider_q1.Value;
+handles.robot.model.animate(deg2rad(localQ0));
+
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
+
 
 
 function txt_q1_Callback(hObject, eventdata, handles)
@@ -263,6 +564,31 @@ function txt_q1_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txt_q1 as text
 %        str2double(get(hObject,'String')) returns contents of txt_q1 as a double
+localQ0 = rad2deg(handles.robot.model.getpos);
+localQ0(1) = str2double(handles.txt_q1.String);
+handles.robot.model.animate(deg2rad(localQ0));
+
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -286,6 +612,30 @@ function slider_q2_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+localQ0 = rad2deg(handles.robot.model.getpos);
+localQ0(2) = handles.slider_q2.Value;
+handles.robot.model.animate(deg2rad(localQ0));
+
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -301,18 +651,42 @@ end
 
 
 
-function txt_2_Callback(hObject, eventdata, handles)
-% hObject    handle to txt_2 (see GCBO)
+function txt_q2_Callback(hObject, eventdata, handles)
+% hObject    handle to txt_q2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of txt_2 as text
-%        str2double(get(hObject,'String')) returns contents of txt_2 as a double
+% Hints: get(hObject,'String') returns contents of txt_q2 as text
+%        str2double(get(hObject,'String')) returns contents of txt_q2 as a double
+localQ0 = rad2deg(handles.robot.model.getpos);
+localQ0(2) = str2double(handles.txt_q2.String);
+handles.robot.model.animate(deg2rad(localQ0));
+
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function txt_2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txt_2 (see GCBO)
+function txt_q2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txt_q2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -331,6 +705,30 @@ function slider_q3_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+localQ0 = rad2deg(handles.robot.model.getpos);
+localQ0(3) = handles.slider_q3.Value;
+handles.robot.model.animate(deg2rad(localQ0));
+
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -353,6 +751,31 @@ function txt_q3_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txt_q3 as text
 %        str2double(get(hObject,'String')) returns contents of txt_q3 as a double
+localQ0 = rad2deg(handles.robot.model.getpos);
+localQ0(3) = str2double(handles.txt_q3.String);
+handles.robot.model.animate(deg2rad(localQ0));
+
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -376,6 +799,30 @@ function slider_q4_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+localQ0 = rad2deg(handles.robot.model.getpos);
+localQ0(4) = handles.slider_q4.Value;
+handles.robot.model.animate(deg2rad(localQ0));
+
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -398,6 +845,31 @@ function txt_q4_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txt_q4 as text
 %        str2double(get(hObject,'String')) returns contents of txt_q4 as a double
+localQ0 = rad2deg(handles.robot.model.getpos);
+localQ0(4) = str2double(handles.txt_q4.String);
+handles.robot.model.animate(deg2rad(localQ0));
+
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -421,6 +893,30 @@ function slider_q5_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+localQ0 = rad2deg(handles.robot.model.getpos);
+localQ0(5) = handles.slider_q5.Value;
+handles.robot.model.animate(deg2rad(localQ0));
+
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -443,6 +939,31 @@ function txt_q5_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txt_q5 as text
 %        str2double(get(hObject,'String')) returns contents of txt_q5 as a double
+localQ0 = rad2deg(handles.robot.model.getpos);
+localQ0(5) = str2double(handles.txt_q5.String);
+handles.robot.model.animate(deg2rad(localQ0));
+
+EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+orient = tr2rpy(EEPose0, 'deg');
+set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+set(handles.slider_q1, 'Value', localQ0(1));
+set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+set(handles.slider_q2, 'Value', localQ0(2));
+set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+set(handles.slider_q3, 'Value', localQ0(3));
+set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+set(handles.slider_q4, 'Value', localQ0(4));
+set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+set(handles.slider_q5, 'Value', localQ0(5));
+set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+guidata(hObject, handles);
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -456,6 +977,28 @@ function txt_q5_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+function UpdateFields(hObject, eventdata, handles)
+handles = guidata(hObject);
+localQ = rad2deg(handles.robot.model.getpos);EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+disp(1);
+EEPose = handles.robot.model.fkine(localQ)
+disp(2);
+set(handles.slider_q1, 'Value', localQ(1));
+set(handles.txt_q1, 'String', sprintf('%.3f', localQ(1)));
+set(handles.slider_q2, 'Value', localQ(2));
+set(handles.txt_q2, 'String', sprintf('%.3f', localQ(2)));
+set(handles.slider_q3, 'Value', localQ(3));
+set(handles.txt_q3, 'String', sprintf('%.3f', localQ(3)));
+set(handles.slider_q4, 'Value', localQ(4));
+set(handles.txt_q4, 'String', sprintf('%.3f', localQ(4)));
+set(handles.slider_q5, 'Value', localQ(5));
+set(handles.txt_q5, 'String', sprintf('%.3f', localQ(5)));
+
+set(handles.txt_EEPX, 'String', sprintf('%.3f', EEPose(1, 4)));
+set(handles.txt_EEPY, 'String', sprintf('%.3f', EEPose(2, 4)));
+set(handles.txt_EEPZ, 'String', sprintf('%.3f', EEPose(3, 4)));
+guidata(hObject, handles);
 
 
 % --- Executes on button press in check_Controller.
@@ -472,6 +1015,86 @@ if get(hObject, 'Value') == 1
     n = 0;
     q = handles.robot.model.getpos;
     tic;
+    linearMultiplier = 0.01;
+    while (get(hObject, 'Value') == 1)
+        n = n + 1;
+        if n >= 10
+            n = 0;
+        [axes, buttons, povs] = read(handles.joy);
+        
+        %non rmrc teach pendant to keep joint 4 parallel
+        xMov = -axes(2) * linearMultiplier;
+        yMov = axes(1) * linearMultiplier;
+        zMov = axes(3) * linearMultiplier;
+        LRMov = -axes(5) * linearMultiplier;
+        %{
+        if handles.robot.model.base(1, 4) >= handles.startingBase(1, 4) + handles.robot.linearRailTravelDist
+            disp(1);
+            handles.robot.model.base(1, 4) = handles.startingBase(1, 4) + handles.robot.linearRailTravelDist;
+            if LRMov < 0
+                handles.robot.model.base = handles.robot.model.base * transl(LRMov, 0, 0);
+                q = handles.robot.model.getpos;
+                handles.robot.model.animate(q);
+                drawnow();
+            end
+        end
+        if handles.robot.model.base(1, 4) <= handles.startingBase(1, 4)
+            disp(2);
+            handles.robot.model.base(1, 4) = handles.startingBase(1, 4);
+            if LRMov > 0
+                handles.robot.model.base = handles.robot.model.base * transl(LRMov, 0, 0);
+                q = handles.robot.model.getpos;
+                handles.robot.model.animate(q);
+                drawnow();
+            end
+        end
+        %}
+        handles.robot.model.base = handles.robot.model.base * transl(LRMov, 0, 0);
+        q = handles.robot.model.getpos;
+        
+        if handles.robot.model.base(1, 4) >= handles.startingBase(1, 4) + handles.robot.linearRailTravelDist
+            handles.robot.model.base(1, 4) = handles.startingBase(1, 4) + handles.robot.linearRailTravelDist;
+        elseif handles.robot.model.base(1, 4) <= handles.startingBase(1, 4)
+            handles.robot.model.base(1, 4) = handles.startingBase(1, 4);
+        end
+        handles.robot.model.animate(q);
+        
+        q0 = handles.robot.model.getpos;
+        EEPose0 = handles.robot.model.fkine(q0);
+        EEPose1 = EEPose0 * transl(xMov, yMov, zMov);
+        q1 = handles.robot.model.ikcon(EEPose1, q0);
+        
+        handles.robot.model.animate(q1);
+        drawnow(); 
+        
+        localQ0 = rad2deg(handles.robot.model.getpos);
+        EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
+        
+        orient = tr2rpy(EEPose0, 'deg');
+        set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
+        set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
+        set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
+        set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
+        set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
+        set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
+        set(handles.slider_q1, 'Value', localQ0(1));
+        set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
+        set(handles.slider_q2, 'Value', localQ0(2));
+        set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
+        set(handles.slider_q3, 'Value', localQ0(3));
+        set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
+        set(handles.slider_q4, 'Value', localQ0(4));
+        set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
+        set(handles.slider_q5, 'Value', localQ0(5));
+        set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+        LRValue = handles.robot.model.base(1, 4) - handles.startingBase(1, 4);
+        set(handles.slider_LR, 'Value', LRValue);
+        set(handles.txt_LRX, 'String', sprintf("%.3f", LRValue));
+
+        end
+    end
+    
+    %{
     while (get(hObject, 'Value') == 1)
         n=n+1; % increment step count
 
@@ -515,7 +1138,9 @@ if get(hObject, 'Value') == 1
         end
         while (toc < dt*n); % wait until loop time (dt) has elapsed 
         end
+    
     end
+%}
 elseif get(hObject, 'Value') == 0
     disp("Check box off");
 end

@@ -30,6 +30,7 @@ classdef GlobalController < handle
 %        function AddRobot(self, robot)
 %           self.robot(numel(self.robot)+1) = robot; 
 %        end
+
        %% Run Simulation
        function Run(self)
            startingPose = self.environment.robot.model.base();
@@ -45,6 +46,36 @@ classdef GlobalController < handle
                      
            % NEED TO FIND WAY OF DOING THIS USING THE COLOURS OF EACH
            % TARGET OBJECT
+           redIndex = 1;
+           greenIndex = 1;
+           blueIndex = 1;
+           [numRows numCols] = size(self.camera.globalCentroids);
+           for i = 1:numRows
+               if self.camera.globalCentroidColours(i) == 'r'
+                  if self.camera.globalCentroidAreas(i) >= 3000
+                      self.redDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                  else
+                      self.redTargetLocations(:,:,redIndex) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                      redIndex = redIndex + 1;
+                  end
+               elseif self.camera.globalCentroidColours(i) == 'g'
+                  if self.camera.globalCentroidAreas(i) >= 3000
+                      self.greenDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                  else
+                      self.greenTargetLocations(:,:,greenIndex) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                      greenIndex = greenIndex + 1;
+                  end
+               else %blue
+                  if self.camera.globalCentroidAreas(i) >= 3000
+                      self.blueDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                  else
+                      self.blueTargetLocations(:,:,blueIndex) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                      blueIndex = blueIndex + 1;
+                  end 
+               end
+           end
+           
+           %{
            self.redDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(1,1), self.camera.globalCentroids(1,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(1)));
            self.redTargetLocations(:,:,1) = eye(4) * transl(self.camera.globalCentroids(4,1), self.camera.globalCentroids(4,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(4)));
            self.greenDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(2,1), self.camera.globalCentroids(2,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(2)));
@@ -52,68 +83,81 @@ classdef GlobalController < handle
            self.greenTargetLocations(:,:,2) = eye(4) * transl(self.camera.globalCentroids(7,1), self.camera.globalCentroids(7,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(7)));
            self.blueDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(3,1), self.camera.globalCentroids(3,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(3)));
            self.blueTargetLocations(:,:,1) = eye(4) * transl(self.camera.globalCentroids(6,1), self.camera.globalCentroids(6,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(6)));
-           
+           %}
            % NEED TO FIX THE CODE ABOVE SO THAT IT IS NOT HARD CODED
+           
            
  
 
            
            
            % Drive to pick up location on linear slide
-           for i = 1:1:size(self.redTargetLocations, 3)
-               shortestDistance = 5;
-               objectIndex = 1;
-               
-               targetPosition = self.redTargetLocations(1,4,i);
-               self.MoveToTargetLinearRail(targetPosition);
-               
-               % Collect Object
-               targetPose = self.redTargetLocations(:,:,i);
-               
-               for j = 1:size(self.environment.targets, 2)
-                   distance = self.DistanceBetweenPoses(targetPose, self.environment.targets{j}.pose);
-                   if distance < shortestDistance
-                       objectIndex = j;
-                       shortestDistance = distance;
+           redSize = size(self.redTargetLocations);
+           if redSize(1) > 0
+               for i = 1:1:size(self.redTargetLocations, 3)
+                   shortestDistance = 5;
+                   objectIndex = 1;
+
+                   targetPosition = self.redTargetLocations(1,4,i);
+                   self.MoveToTargetLinearRail(targetPosition);
+
+                   % Collect Object
+                   targetPose = self.redTargetLocations(:,:,i);
+
+                   for j = 1:size(self.environment.targets, 2)
+                       distance = self.DistanceBetweenPoses(targetPose, self.environment.targets{j}.pose);
+                       if distance < shortestDistance
+                           objectIndex = j;
+                           shortestDistance = distance;
+                       end
                    end
-               end
-                              
-               if targetPose(2,4) < self.environment.robot.model.base(2,4)
-                   waypoint = deg2rad([-90, 60, 65, -35, 0]);
+
+                   if targetPose(2,4) < self.environment.robot.model.base(2,4)
+                       %waypoint = deg2rad([-90, 60, 65, -35, 0]);
+                       q0 = self.environment.robot.model.getpos;
+                       waypoint = self.environment.robot.model.ikcon(targetPose * transl(0, 0, 0.1) * trotx(pi), q0);
+                       self.MoveRobotArmJointAngles(waypoint);
+
+                       targetPose = self.redTargetLocations(:,:,i) * trotx(pi);
+
+                   else
+                       %waypoint = deg2rad([90, 60, 65, -35, 0]);
+                       q0 = self.environment.robot.model.getpos;
+                       waypoint = self.environment.robot.model.ikcon(targetPose * transl(0, 0, 0.1) * trotx(pi), q0);
+                       self.MoveRobotArmJointAngles(waypoint);
+
+                       targetPose = self.redTargetLocations(:,:,i) * trotx(pi);
+                   end
+
+                   self.MoveRobotArm(targetPose);
+
+                   disp('Target Pose: ');
+                   disp(targetPose);
+                   pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
+                   error = targetPose - pose
+
+                   self.environment.robot.object = self.environment.targets{objectIndex};
+
+                   % Return to deposit location
                    self.MoveRobotArmJointAngles(waypoint);
-                   targetPose = self.redTargetLocations(:,:,i) * trotx(pi);
+                   self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
 
-               else
-                   waypoint = deg2rad([90, 60, 65, -35, 0]);
-                   self.MoveRobotArmJointAngles(waypoint);
-                   targetPose = self.redTargetLocations(:,:,i) * trotx(pi);
+                   targetPosition = self.redDepositLocation(1,4,1);
+                   self.MoveToTargetLinearRail(targetPosition);
+
+                   % Drop object
+                   targetPose = self.redDepositLocation(:,:,1);
+                    wayPoint = targetPose * transl(0, 0, 0.05);
+                   self.MoveRobotArm(wayPoint * trotx(pi));
+                   self.MoveRobotArm(targetPose * trotx(pi));
+
+                   pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
+
+                   self.environment.robot.object = EnvironmentObject.empty;
+                   self.MoveRobotArm(wayPoint * trotx(pi));
+
+                   self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);   
                end
-
-               self.MoveRobotArm(targetPose);
-               
-               disp('Target Pose: ');
-               disp(targetPose);
-               pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
-               error = targetPose - pose
-               
-               self.environment.robot.object = self.environment.targets{objectIndex};
-               
-               % Return to deposit location
-               self.MoveRobotArmJointAngles(waypoint);
-               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
-
-               targetPosition = self.redDepositLocation(1,4,1);
-               self.MoveToTargetLinearRail(targetPosition);
-
-               % Drop object
-               targetPose = self.redDepositLocation(:,:,1);
-               self.MoveRobotArm(targetPose * trotx(pi));
-               
-               pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
-               
-               self.environment.robot.object = EnvironmentObject.empty;
-               
-               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);   
            end
            
            
@@ -124,128 +168,140 @@ classdef GlobalController < handle
 %            
 %            self.environment.AddObject(self.hand);    
 
+           
+           
+           greenSize = size(self.greenTargetLocations);
+           if greenSize(1) > 0
+               for i = 1:1:size(self.greenTargetLocations, 3)
+                   shortestDistance = 5;
+                   objectIndex = 1;
 
-                  
-           self.obstacle = EnvironmentObject('Type', 'obstacle', 'ModelPath', 'obstacleBall.ply', 'Pose', transl(0, 0, self.environment.foundation.dimensions(1,3) + 0.2), 'Dimensions', [0.1 0.1 0.1], 'GeneralColour', 'y');
-           self.obstacle.Display();
-           self.environment.AddObject(self.obstacle);
-           
-           
-           
-           for i = 1:1:size(self.greenTargetLocations, 3)
-               shortestDistance = 5;
-               objectIndex = 1;
-               
-               targetPosition = self.greenTargetLocations(1,4,i);
-               self.MoveToTargetLinearRail(targetPosition);
-               
-               % Collect Object
-               targetPose = self.greenTargetLocations(:,:,i);
-               
-               for j = 1:size(self.environment.targets, 2)
-                   distance = self.DistanceBetweenPoses(targetPose, self.environment.targets{j}.pose);
-                   if distance < shortestDistance
-                       objectIndex = j;
-                       shortestDistance = distance;
+                   targetPosition = self.greenTargetLocations(1,4,i);
+                   self.MoveToTargetLinearRail(targetPosition);
+
+                   % Collect Object
+                   targetPose = self.greenTargetLocations(:,:,i);
+
+                   for j = 1:size(self.environment.targets, 2)
+                       distance = self.DistanceBetweenPoses(targetPose, self.environment.targets{j}.pose);
+                       if distance < shortestDistance
+                           objectIndex = j;
+                           shortestDistance = distance;
+                       end
                    end
-               end
-               
-               if targetPose(2,4) < self.environment.robot.model.base(2,4)
-                   waypoint = deg2rad([-90, 60, 65, -35, 0]);
+
+                   if targetPose(2,4) < self.environment.robot.model.base(2,4)
+                       %waypoint = deg2rad([-90, 60, 65, -35, 0]);
+
+                       q0 = self.environment.robot.model.getpos;
+                       waypoint = self.environment.robot.model.ikcon(targetPose * transl(0, 0, 0.1) * trotx(pi), q0);
+                       self.MoveRobotArmJointAngles(waypoint);
+                       targetPose = self.greenTargetLocations(:,:,i) * trotx(pi);
+
+                   else
+                       %waypoint = deg2rad([90, 60, 65, -35, 0]);
+                       q0 = self.environment.robot.model.getpos;
+                       waypoint = self.environment.robot.model.ikcon(targetPose * transl(0, 0, 0.1) * trotx(pi), q0);
+
+                       self.MoveRobotArmJointAngles(waypoint);
+                       targetPose = self.greenTargetLocations(:,:,i) * trotx(pi);
+
+                   end
+
+                   self.MoveRobotArm(targetPose);
+
+                   disp('Target Pose: ');
+                   disp(targetPose);
+                   pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
+                   error = targetPose - pose
+
+                   self.environment.robot.object = self.environment.targets{objectIndex};
+
+                   % Return to deposit location
                    self.MoveRobotArmJointAngles(waypoint);
-                   targetPose = self.greenTargetLocations(:,:,i) * trotx(pi);
+                   self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
 
-               else
-                   waypoint = deg2rad([90, 60, 65, -35, 0]);
-                   self.MoveRobotArmJointAngles(waypoint);
-                   targetPose = self.greenTargetLocations(:,:,i) * trotx(pi);
+                   targetPosition = self.greenDepositLocation(1,4,1);
+                   self.MoveToTargetLinearRail(targetPosition);
 
+                   % Drop object
+                   targetPose = self.greenDepositLocation(:,:,1);
+                   wayPoint = targetPose * transl(0, 0, 0.05);
+                   self.MoveRobotArm(wayPoint * trotx(pi));
+                   self.MoveRobotArm(targetPose * trotx(pi));
+
+                   pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
+
+                   self.environment.robot.object = EnvironmentObject.empty;
+                   self.MoveRobotArm(wayPoint * trotx(pi));
+                   self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
                end
-
-               self.MoveRobotArm(targetPose);
-                      
-               disp('Target Pose: ');
-               disp(targetPose);
-               pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
-               error = targetPose - pose
-               
-               self.environment.robot.object = self.environment.targets{objectIndex};
-               
-               % Return to deposit location
-               self.MoveRobotArmJointAngles(waypoint);
-               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
-
-               targetPosition = self.greenDepositLocation(1,4,1);
-               self.MoveToTargetLinearRail(targetPosition);
-
-               % Drop object
-               targetPose = self.greenDepositLocation(:,:,1);
-               self.MoveRobotArm(targetPose * trotx(pi));
-               
-               pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
-               
-               self.environment.robot.object = EnvironmentObject.empty;
-               
-               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
            end
            
            
-           
+           blueSize = size(self.blueTargetLocations);
+           if blueSize(1) > 0
+               for i = 1:1:size(self.blueTargetLocations, 3)
+                   shortestDistance = 5;
+                   objectIndex = 1;
+                   targetPosition = self.blueTargetLocations(1,4,i);
+                   self.MoveToTargetLinearRail(targetPosition);
 
-           for i = 1:1:size(self.blueTargetLocations, 3)
-               shortestDistance = 5;
-               objectIndex = 1;
-               targetPosition = self.blueTargetLocations(1,4,i);
-               self.MoveToTargetLinearRail(targetPosition);
-               
-               % Collect Object
-               targetPose = self.blueTargetLocations(:,:,i);
-               
-               for j = 1:size(self.environment.targets, 2)
-                   distance = self.DistanceBetweenPoses(targetPose, self.environment.targets{j}.pose);
-                   if distance < shortestDistance
-                       objectIndex = j;
-                       shortestDistance = distance;
+                   % Collect Object
+                   targetPose = self.blueTargetLocations(:,:,i);
+
+                   for j = 1:size(self.environment.targets, 2)
+                       distance = self.DistanceBetweenPoses(targetPose, self.environment.targets{j}.pose);
+                       if distance < shortestDistance
+                           objectIndex = j;
+                           shortestDistance = distance;
+                       end
                    end
-               end
-               
-               if targetPose(2,4) < self.environment.robot.model.base(2,4)
-                   waypoint = deg2rad([-90, 60, 65, -35, 0]);
+
+                   if targetPose(2,4) < self.environment.robot.model.base(2,4)
+                       %waypoint = deg2rad([-90, 60, 65, -35, 0]);
+                       q0 = self.environment.robot.model.getpos;
+                       waypoint = self.environment.robot.model.ikcon(targetPose * transl(0, 0, 0.1) * trotx(pi), q0);
+                       self.MoveRobotArmJointAngles(waypoint);
+                       targetPose = self.blueTargetLocations(:,:,i) * trotx(pi);
+
+                   else
+                       %waypoint = deg2rad([90, 60, 65, -35, 0]);
+                       q0 = self.environment.robot.model.getpos;
+                       waypoint = self.environment.robot.model.ikcon(targetPose * transl(0, 0, 0.1) * trotx(pi), q0);
+                       self.MoveRobotArmJointAngles(waypoint);
+                       targetPose = self.blueTargetLocations(:,:,i) * trotx(pi);
+
+                   end
+
+                   self.MoveRobotArm(targetPose);
+
+                   disp('Target Pose: ');
+                   disp(targetPose);
+                   pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
+                   error = targetPose - pose
+
+                   self.environment.robot.object = self.environment.targets{objectIndex};
+
+                   % Return to deposit location
                    self.MoveRobotArmJointAngles(waypoint);
-                   targetPose = self.blueTargetLocations(:,:,i) * trotx(pi);
+                   self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
 
-               else
-                   waypoint = deg2rad([90, 60, 65, -35, 0]);
-                   self.MoveRobotArmJointAngles(waypoint);
-                   targetPose = self.blueTargetLocations(:,:,i) * trotx(pi);
+                   targetPosition = self.blueDepositLocation(1,4,1);
+                   self.MoveToTargetLinearRail(targetPosition);
 
+                   % Drop object
+                   targetPose = self.blueDepositLocation(:,:,1);
+                   wayPoint = targetPose * transl(0, 0, 0.05);
+                   self.MoveRobotArm(wayPoint * trotx(pi));
+                   self.MoveRobotArm(targetPose * trotx(pi));
+
+                   pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
+
+                   self.environment.robot.object = EnvironmentObject.empty;
+                   self.MoveRobotArm(wayPoint * trotx(pi));
+                   self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
                end
-
-               self.MoveRobotArm(targetPose);
-                      
-               disp('Target Pose: ');
-               disp(targetPose);
-               pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
-               error = targetPose - pose
-               
-               self.environment.robot.object = self.environment.targets{objectIndex};
-               
-               % Return to deposit location
-               self.MoveRobotArmJointAngles(waypoint);
-               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
-
-               targetPosition = self.blueDepositLocation(1,4,1);
-               self.MoveToTargetLinearRail(targetPosition);
-
-               % Drop object
-               targetPose = self.blueDepositLocation(:,:,1);
-               self.MoveRobotArm(targetPose * trotx(pi));
-               
-               pose = self.environment.robot.model.fkine(self.environment.robot.model.getpos())
-               
-               self.environment.robot.object = EnvironmentObject.empty;
-               
-               self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
            end
                       
            
@@ -274,8 +330,13 @@ classdef GlobalController < handle
        function dist = DistanceBetweenPoses(self, pose1, pose2)
             dist = sqrt(((pose1(1,4)-pose2(1,4))^2 + (pose1(2,4)-pose2(2,4))^2 + (pose1(3,4)-pose2(3,4))^2));
        end
-       
-       
+       %% Choose which targets are associated with each blob centroid
+       function AssignCentroids(self)
+           [numRows numCols] = size(self.camera.globalCentroids);
+           for i = 0:numRows
+               
+           end
+       end
        %% Move Arm
         function MoveRobotArm(self, targetPose)
             q0 = self.environment.robot.model.getpos;
@@ -348,8 +409,8 @@ classdef GlobalController < handle
                     objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
 
                     % Update the object's position
-                   %self.environment.robot.object(k).MoveObject(objectPose);
-                   self.environment.robot.object(k)
+                    %self.environment.robot.object(k).MoveObject(objectPose);
+                    self.environment.robot.object(k)
                     self.environment.robot.MoveObject(self.environment.robot.object(k));
                end
                
@@ -472,7 +533,6 @@ classdef GlobalController < handle
                   end
               end
               
-              tic;
               while (self.environment.robot.collisionDetected == 1)
                    self.environment.robot.collisionDetected = 0;   
                    for i = 1:1:size(self.environment.obstacleObjects, 2)
@@ -493,10 +553,6 @@ classdef GlobalController < handle
                       end
                    end
                    
-                   if toc >= 15
-                      self.obstacle.Remove();
-                      self.environment.obstacleObjects{1}.pose = self.obstacle.pose;
-                   end
                    pause(0.01);
               end
              

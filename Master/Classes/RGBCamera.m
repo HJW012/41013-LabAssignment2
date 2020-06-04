@@ -20,8 +20,11 @@ classdef RGBCamera < handle
        blobCentroids;
        blobOrientations;
        blobBB;
+       blobAreas;
        mappedCentroids;
        globalCentroids;
+       globalCentroidColours = [string.empty];
+       globalCentroidAreas;
        globalOrientations;
        
        im;
@@ -135,6 +138,8 @@ classdef RGBCamera < handle
            self.blobPerimeters = cat(1, s.Perimeter);
            self.blobOrientations = cat(1, s.Orientation);
            self.blobBB = cat(1, s.Extent);
+           self.blobAreas = cat(1, s.Area);
+           
        end
        %% Plot Centroids
        function PlotCentroids(self)
@@ -189,10 +194,25 @@ classdef RGBCamera < handle
            for i = 1:numRows
                avg =  (pixelColours(i, 1) + pixelColours(i, 2) + pixelColours(i, 3)) / 3;
                if (avg < 200 && avg > 25 && self.blobPerimeters(i) < 300 && self.mappedCentroids(i, 1) > 0 && self.mappedCentroids(i, 2) > 0)
-                   self.blobBB(i);
                    self.globalCentroids(j, 1) = posX(i);
                    self.globalCentroids(j, 2) = -1*posY(i);
                    self.globalOrientations(j) = self.blobOrientations(i);
+                   self.globalCentroidAreas(j) = self.blobAreas(i);
+                   if pixelColours(i, 1) >= 150
+                       disp('RED OBJECT DETECTED');
+                       self.globalCentroidColours(j) = 'r';
+                   end
+                   
+                   if pixelColours(i, 2) >= 150
+                       disp('YELLOW OBJECT DETECTED');
+                       self.globalCentroidColours(j) = 'g';
+                   end
+                   
+                   if pixelColours(i, 3) >= 150
+                       disp('BLUE OBJECT DETECTED');
+                       self.globalCentroidColours(j) = 'b';
+                   end
+                   
                    j = j + 1;
                end
            end
