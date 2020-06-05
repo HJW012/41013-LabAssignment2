@@ -61,6 +61,30 @@ classdef Environment < handle
            
            
        end
+       %% Draw Background
+       function DrawBackground(self)
+          backgroundImg1 = imread('background1.jpg');
+          backgroundImg2 = imread('background2.jpg');
+          groundImg = imread('ground.jpg');
+          
+          % Background 2
+          xImage = [-1.3 1.3; -1.3 1.3];
+          yImage = [-0.75 -0.75; -0.75 -0.75];
+          zImage = [1.5 1.5; 0 0];
+          surf(xImage, yImage, zImage, 'CData', backgroundImg2, 'FaceColor', 'texturemap');
+          
+          % Background 1
+          xImage = [-1.3 -1.3; -1.3 -1.3];
+          yImage = [-0.75 0.75; -0.75 0.75];
+          zImage = [1.5 1.5; 0 0];
+          surf(xImage, yImage, zImage, 'CData', backgroundImg1, 'FaceColor', 'texturemap');
+          
+          % Ground
+          xImage = [-1.3 -1.3; 1.3 1.3];
+          yImage = [-0.75 0.75; -0.75 0.75];
+          zImage = [0 0; 0 0];
+          surf(xImage, yImage, zImage, 'CData', groundImg, 'FaceColor', 'texturemap');
+       end
        %% Add Robot
        function AddRobot(self, robot)
            %self.robot(numel(self.robot)+1) = robot;
@@ -90,6 +114,7 @@ classdef Environment < handle
            
            self.lightCurtain.Display();
                       
+           self.DrawBackground();
            axis equal;
            camlight;
        end

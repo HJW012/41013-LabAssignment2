@@ -89,10 +89,6 @@ hold on;
 handles.plc.environment.Display();
 disp('Initialisation Complete');
 
-% Update handles structure
-pause(3);
-handles.timer = timer('TimerFcn', {@timer_callback, handles.figure1}, 'ExecutionMode', 'fixedRate', 'Period', 0.5, 'StartDelay', 4);
-%start(handles.timer);
 
 guidata(hObject, handles);
 
@@ -133,7 +129,7 @@ function btn_InsertObstruction_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_InsertObstruction (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.plc.hand = EnvironmentObject('Type', 'misc', 'ModelPath', 'hand.ply', 'Pose', transl(-0.2, 0.45, handles.plc.environment.foundation.dimensions(1,3)+0.4), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
+handles.plc.hand = EnvironmentObject('Type', 'misc', 'ModelPath', 'hand.ply', 'Pose', transl(-0.2, 0.45, handles.plc.environment.foundation.dimensions(1,3)+0.1), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
 handles.plc.hand.SetPose(handles.plc.hand.pose * trotz(-pi/2));
 handles.plc.hand.Display();
 
@@ -419,6 +415,4 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: delete(hObject) closes the figure
-stop(handles.timer);
-delete(handles.timer);
 delete(hObject);

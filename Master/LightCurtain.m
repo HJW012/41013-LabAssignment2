@@ -7,19 +7,23 @@ classdef LightCurtain < handle
         tableWidth;
         tableLength;
         tableHeight;
+        model = EnvironmentObject.empty;
    end
    
    methods 
        function self = LightCurtain(table)
+           
             self.centre = [0,0,0]; %table.modelMidPoint;
             self.tableWidth = table.dimensions(1,1);
             self.tableLength = table.dimensions(1,2);
             self.tableHeight = table.dimensions(1,3);
+            self.model = EnvironmentObject('Type', 'misc', 'ModelPath', 'lightCurtain.ply', 'Pose', transl(0, 0, self.tableHeight));
             self.GetLightCurtain();
        end
        
        function GetLightCurtain(self)
-            x = (self.centre(1,1) - (0.5*self.tableWidth));
+            self.model.Display();
+            x = (self.centre(1,1) - (0.5*self.tableWidth) - 0.05);
             z = (self.tableHeight + 0.8);
 
             self.lightCurtain = [];
@@ -28,17 +32,17 @@ classdef LightCurtain < handle
                 self.lightCurtain = [self.lightCurtain; x, y, self.tableHeight, x, y, z];
             end
 
-            x = (self.centre(1,1) + (0.5*self.tableWidth));
+            x = (self.centre(1,1) + (0.5*self.tableWidth) + 0.05);
             for y = (self.centre(1,2) - (0.5*self.tableLength)):0.1:(self.centre(1,2) + (0.5*self.tableLength))
                 self.lightCurtain = [self.lightCurtain; x, y, self.tableHeight, x, y, z];
             end
 
-            y = (self.centre(1,2) - (0.5*self.tableLength));
+            y = (self.centre(1,2) - (0.5*self.tableLength) - 0.07);
             for x = (self.centre(1,1) - (0.5*self.tableWidth)):0.1:(self.centre(1,1) + (0.5*self.tableWidth))
                 self.lightCurtain = [self.lightCurtain; x, y, self.tableHeight, x, y, z];
             end
 
-            y = (self.centre(1,2) + (0.5*self.tableLength));
+            y = (self.centre(1,2) + (0.5*self.tableLength) + 0.02);
             for x = (self.centre(1,1) - (0.5*self.tableWidth)):0.1:(self.centre(1,1) + (0.5*self.tableWidth))
                 self.lightCurtain = [self.lightCurtain; x, y, self.tableHeight, x, y, z];
             end
@@ -48,7 +52,7 @@ classdef LightCurtain < handle
            for i = 1:1:size(self.lightCurtain, 1)
                 point1 = [self.lightCurtain(i,1), self.lightCurtain(i,2), self.lightCurtain(i,3)];
                 point2 = [self.lightCurtain(i,4), self.lightCurtain(i,5), self.lightCurtain(i,6)];
-                self.curtain_h = plot3([point1(1),point2(1)],[point1(2),point2(2)],[point1(3),point2(3)],'r');
+                %self.curtain_h = plot3([point1(1),point2(1)],[point1(2),point2(2)],[point1(3),point2(3)],'r');
            end
        end
        

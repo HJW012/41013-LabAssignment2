@@ -94,7 +94,7 @@ close all;
 clear;
 clc;
 
-mode = MainMenu
+mode = MainMenu;
 
 switch mode
     case 1
