@@ -587,10 +587,6 @@ classdef GlobalController < handle
                               break;
                            end
                        end
-                       if toc >= 5
-                          self.hand.Remove();
-                          self.environment.checkObjects{index}.pose = self.hand.pose;
-                       end
                        pause(0.01);
                    end
 

@@ -22,7 +22,7 @@ function varargout = Simulation(varargin)
 
 % Edit the above text to modify the response to help Simulation
 
-% Last Modified by GUIDE v2.5 04-Jun-2020 16:11:29
+% Last Modified by GUIDE v2.5 06-Jun-2020 18:51:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,7 +66,19 @@ handles.table = EnvironmentObject('Type', 'foundation', 'ModelPath', 'table.ply'
 handles.blueCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'blueCrate.ply', 'Pose', transl(0.75, 0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'b');
 handles.yellowCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'yellowCrate.ply', 'Pose', transl(0.75, 0, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'g');
 handles.redCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'redCrate.ply', 'Pose', transl(0.75, -0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'r');
-handles.environment = Environment(handles.table, handles.blueCrate, handles.yellowCrate, handles.redCrate);
+handles.cone1 = EnvironmentObject('Type', 'misc', 'ModelPath', 'cone.ply', 'Pose', transl(1.25, -0.75, 0));
+handles.cone2 = EnvironmentObject('Type', 'misc', 'ModelPath', 'cone.ply', 'Pose', transl(-1.25, -0.75, 0));
+handles.cone3 = EnvironmentObject('Type', 'misc', 'ModelPath', 'cone.ply', 'Pose', transl(1.25, 0.75, 0));
+handles.cone4 = EnvironmentObject('Type', 'misc', 'ModelPath', 'cone.ply', 'Pose', transl(-1.25, 0.75, 0));
+handles.estop = EnvironmentObject('Type', 'misc', 'ModelPath', 'EStop.ply', 'Pose', transl(0, 0.8, 0));
+hold on;
+handles.cone1.Display();
+handles.cone2.Display();
+handles.cone3.Display();
+handles.cone4.Display();
+handles.estop.Display();
+
+handles.environment = Environment(handles.table, handles.blueCrate, handles.yellowCrate, handles.redCrate, handles.cone1);
 handles.robot = Dobot(); %No basepose given as the linear rail will automatically update its position
 handles.robot.GenerateLinearRail([-0.45, 0, 0.8911]);
 handles.environment.AddRobot(handles.robot);
@@ -112,15 +124,24 @@ function btn_EStop_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_EStop (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if handles.EStopPress
-    disp("EStop Released");
+handles.EStopPress = ~handles.EStopPress;
+if ~handles.EStopPress
+    handles.InsertObstacle.Enable = 'on';
+    handles.RemoveObstacle.Enable = 'on';
+    handles.InsertObstruction.Enable = 'on';
+    handles.RemoveObstruction.Enable = 'on';
+    guidata(hObject, handles);
     handles.plc.emergencyStop = 0;
 else
-    disp("EStop Pressed");
+    handles.InsertObstacle.Enable = 'off';
+    handles.RemoveObstacle.Enable = 'off';
+    handles.InsertObstruction.Enable = 'off';
+    handles.RemoveObstruction.Enable = 'off';
+    guidata(hObject, handles);
     handles.plc.emergencyStop = 1;
 end
 
-handles.EStopPress = ~handles.EStopPress
+
 guidata(hObject, handles);
 
 
@@ -375,6 +396,7 @@ handles.btn_RemoveObstacle.Enable = 'on';
 handles.btn_InsertObstruction.Enable = 'on';
 handles.btn_RemoveObstruction.Enable = 'on';
 handles.btn_RemoveObstruction.Enable = 'on';
+handles.btn_InsertTarget.Enable = 'off';
 handles.btn_EStop.Enable = 'on';
 handles.btn_StartSim.Enable = 'off';
 handles.plc.Init();
@@ -415,4 +437,18 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: delete(hObject) closes the figure
-delete(hObject);
+if isequal(get(handles.figure1, 'waitstatus'), 'waiting')
+    uiresume(hObject);
+    %close all;
+else
+    delete(hObject);
+end
+
+
+% --- Executes on button press in btn_Exit.
+function btn_Exit_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_Exit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+guidata(hObject,handles);
+figure1_CloseRequestFcn(handles.figure1, eventdata, handles);

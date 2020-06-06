@@ -22,7 +22,7 @@ function varargout = AdvancedTeach(varargin)
 
 % Edit the above text to modify the response to help AdvancedTeach
 
-% Last Modified by GUIDE v2.5 04-Jun-2020 23:18:48
+% Last Modified by GUIDE v2.5 06-Jun-2020 16:49:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1143,4 +1143,27 @@ if get(hObject, 'Value') == 1
 %}
 elseif get(hObject, 'Value') == 0
     disp("Check box off");
+end
+
+
+% --- Executes on button press in btn_Exit.
+function btn_Exit_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_Exit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+guidata(hObject,handles);
+figure1_CloseRequestFcn(handles.figure1, eventdata, handles);
+
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+if isequal(get(handles.figure1, 'waitstatus'), 'waiting')
+    uiresume(hObject);
+    %close all;
+else
+    delete(hObject);
 end

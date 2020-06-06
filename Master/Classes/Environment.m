@@ -68,20 +68,20 @@ classdef Environment < handle
           groundImg = imread('ground.jpg');
           
           % Background 2
-          xImage = [-1.3 1.3; -1.3 1.3];
-          yImage = [-0.75 -0.75; -0.75 -0.75];
+          xImage = [-1.5 1.5; -1.5 1.5];
+          yImage = [-1 -1; -1 -1];
           zImage = [1.5 1.5; 0 0];
           surf(xImage, yImage, zImage, 'CData', backgroundImg2, 'FaceColor', 'texturemap');
           
           % Background 1
-          xImage = [-1.3 -1.3; -1.3 -1.3];
-          yImage = [-0.75 0.75; -0.75 0.75];
+          xImage = [-1.5 -1.5; -1.5 -1.5];
+          yImage = [-1 1; -1 1];
           zImage = [1.5 1.5; 0 0];
           surf(xImage, yImage, zImage, 'CData', backgroundImg1, 'FaceColor', 'texturemap');
           
           % Ground
-          xImage = [-1.3 -1.3; 1.3 1.3];
-          yImage = [-0.75 0.75; -0.75 0.75];
+          xImage = [-1.5 -1.5; 1.5 1.5];
+          yImage = [-1 1; -1 1];
           zImage = [0 0; 0 0];
           surf(xImage, yImage, zImage, 'CData', groundImg, 'FaceColor', 'texturemap');
        end
