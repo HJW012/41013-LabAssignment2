@@ -37,59 +37,7 @@ plc.Init();
 
 disp('Initialisation Complete');
 plc.Run();
-
-%% Advanced Teach Demo
-close all;
-clear;
-clc;
-
-robot = Dobot();
-robot.GenerateLinearRail([0,0,0]);
-robot.Display();
-camlight;
-axis equal;
-
-robot.AdvancedTeach();
-%% Safety Demo
-close all;
-clear;
-clc;
-
-
-blueCrate = EnvironmentObject('ModelPath', 'blueCrate.ply', 'Pose', transl(-0.75, 0, 0.8911), 'Dimensions', [0 0 0.0664], 'GeneralColour', 'b');
-redPen = EnvironmentObject('ModelPath', 'redPen.ply', 'Pose', transl(0.75, 0.35, 0.8911), 'Dimensions', [0 0 0.0664], 'GeneralColour', 'r');
-
-
-camera = RGBCamera('CentrePose', transl(0, 0, 2.5) * troty(pi));
-camera.DisplayCamera();
-hold on;
-camera.AddObject(blueCrate);
-camera.AddObject(redPen);
-blueCrate.Display();
-
-
-camera.PlotObjects();
-camera.LocateObjects();
 %% Simulation
-close all;
-clear;
-clc;
-
-PLC = GlobalController();
-PLC.Init(); %Display all objects
-
-disp("Press ENTER to begin simulation");
-pause();
-
-PLC.Run();
-%% 
-if x == y
-   disp(1); 
-else
-    disp(0);
-end
-
-%% GUI Test
 close all;
 clear;
 clc;

@@ -41,19 +41,8 @@ classdef GlobalController < handle
           
           self.camera = RGBCamera('CentrePose', transl(0, 0, 2.5) * troty(pi));
           
-          self.environment.Display();
        end
-       %% Insert Obstacle for collision detection
-       function InsertObstacle(self, pose)
-          self.obstacle = EnvironmentObject('Type', 'obstacle', 'ModelPath', 'obstacleBall.ply', 'Pose', pose, 'Dimensions', [0.1 0.1 0.1], 'GeneralColour', 'y');
-          self.obstacle.Display();
-          self.environment.AddObject(self.obstacle);
-       end
-       %% Remove Obstacle
-       function RemoveObstacle(self)
-          self.obstacle.Remove();
-          self.environment.obstacleObjects{1}.pose = self.obstacle.pose;
-       end
+       
        %% Add Environment
        function AddEnvironment(self, environment)
            self.environment = environment;
@@ -71,19 +60,20 @@ classdef GlobalController < handle
        %% Insert Target
        function InsertTarget(self, pose, colour)
           if strcmp(colour, 'r')
-             object = EnvironmentObject('Type', 'target', 'ModelPath', 'redPen.ply', 'Pose', pose, 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'r');
+              object = EnvironmentObject('Type', 'target', 'ModelPath', 'redPen.ply', 'Pose', pose, 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'r');
+
           end
           
           if strcmp(colour, 'b')
-             object = EnvironmentObject('Type', 'target', 'ModelPath', 'bluePen.ply', 'Pose', pose, 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'b');
+              
           end
           
-          if strcmp(colour, 'g')
-             object = EnvironmentObject('Type', 'target', 'ModelPath', 'pencil.ply', 'Pose', pose, 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'g');
+          if strcmp(colour, 'rg')
+              
           end
-          
           object.Display();
           self.environment.AddObject(object);
+          %object.SetPose(
        end
        %% Run Simulation
        function Run(self)

@@ -192,9 +192,8 @@ end
 
 % --- Executes on button press in btn_RemoveObstacle.
 function btn_RemoveObstacle_Callback(hObject, eventdata, handles)
-%handles.plc.obstacle.Remove();
-%handles.plc.environment.obstacleObjects{1}.pose = handles.plc.obstacle.pose;
-handles.plc.RemoveObstacle();
+handles.plc.obstacle.Remove();
+handles.plc.environment.obstacleObjects{1}.pose = handles.plc.obstacle.pose;
 guidata(hObject, handles);
 
 % --- Executes on button press in btn_InsertObstacle.
@@ -202,20 +201,29 @@ function btn_InsertObstacle_Callback(hObject, eventdata, handles)
 obstacleX = str2double(handles.txt_ObstacleX.String);
 obstacleY = str2double(handles.txt_ObstacleY.String);
 obstacleZ = str2double(handles.txt_ObstacleZ.String);
-%handles.plc.obstacle = EnvironmentObject('Type', 'obstacle', 'ModelPath', 'obstacleBall.ply', 'Pose', transl(obstacleX, obstacleY, obstacleZ), 'Dimensions', [0.1 0.1 0.1], 'GeneralColour', 'y');
-%handles.plc.obstacle.Display();
-%handles.plc.environment.AddObject(handles.plc.obstacle);
-
-obstaclePose = transl(obstacleX, obstacleY, obstacleZ);
-handles.plc.InsertObstacle(obstaclePose);
+handles.plc.obstacle = EnvironmentObject('Type', 'obstacle', 'ModelPath', 'obstacleBall.ply', 'Pose', transl(obstacleX, obstacleY, obstacleZ), 'Dimensions', [0.1 0.1 0.1], 'GeneralColour', 'y');
+handles.plc.obstacle.Display();
+handles.plc.environment.AddObject(handles.plc.obstacle);
 guidata(hObject, handles);
 
 
 function txt_TargetX_Callback(hObject, eventdata, handles)
+% hObject    handle to txt_TargetX (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txt_TargetX as text
+%        str2double(get(hObject,'String')) returns contents of txt_TargetX as a double
 
 
 % --- Executes during object creation, after setting all properties.
 function txt_TargetX_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txt_TargetX (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
@@ -223,10 +231,22 @@ end
 
 
 function txt_TargetY_Callback(hObject, eventdata, handles)
+% hObject    handle to txt_TargetY (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txt_TargetY as text
+%        str2double(get(hObject,'String')) returns contents of txt_TargetY as a double
 
 
 % --- Executes during object creation, after setting all properties.
 function txt_TargetY_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txt_TargetY (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
@@ -234,10 +254,22 @@ end
 
 
 function txt_TargetZ_Callback(hObject, eventdata, handles)
+% hObject    handle to txt_TargetZ (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txt_TargetZ as text
+%        str2double(get(hObject,'String')) returns contents of txt_TargetZ as a double
 
 
 % --- Executes during object creation, after setting all properties.
 function txt_TargetZ_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txt_TargetZ (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
@@ -245,10 +277,22 @@ end
 
 
 function txt_TargetRot_Callback(hObject, eventdata, handles)
+% hObject    handle to txt_TargetRot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txt_TargetRot as text
+%        str2double(get(hObject,'String')) returns contents of txt_TargetRot as a double
 
 
 % --- Executes during object creation, after setting all properties.
 function txt_TargetRot_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txt_TargetRot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
@@ -309,6 +353,10 @@ guidata(hObject, handles);
 
 % --- Executes when user attempts to close figure1.
 function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
 % Hint: delete(hObject) closes the figure
 if isequal(get(handles.figure1, 'waitstatus'), 'waiting')
     uiresume(hObject);
@@ -320,5 +368,8 @@ end
 
 % --- Executes on button press in btn_Exit.
 function btn_Exit_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_Exit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 guidata(hObject,handles);
 figure1_CloseRequestFcn(handles.figure1, eventdata, handles);

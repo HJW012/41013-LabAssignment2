@@ -14,8 +14,6 @@ classdef Environment < handle
        checkObjectIndex = 1;
        obstacleObjects;
        obstacleObjectIndex = 1;
-       safetyObject;
-       safetyObjectIndex = 1;
    end
    
    methods 
@@ -62,8 +60,7 @@ classdef Environment < handle
            end
            
            if strcmp(object.type, 'safety')
-              self.safetyObject{self.safetyObjectIndex} = object;
-              self.safetyObjectIndex = self.safetyObjectIndex + 1;
+              selfl; 
            end
            
        end
@@ -116,9 +113,7 @@ classdef Environment < handle
                self.deposit{i}.Display();
            end
            
-           for i = 1:size(self.safetyObject, 2)
-              self.safetyObject{i}.Display(); 
-           end
+           for i = 1:size(self.
            
            self.robot.Display();
            
