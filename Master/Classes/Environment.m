@@ -8,12 +8,14 @@ classdef Environment < handle
        targetIndex = 1;
        depositIndex = 1;
        miscObjectIndex = 1;
-       lightCurtain;
+       lightCurtain = LightCurtain.empty;
        robot;
        checkObjects;
        checkObjectIndex = 1;
        obstacleObjects;
        obstacleObjectIndex = 1;
+       safetyObject;
+       safetyObjectIndex = 1;
    end
    
    methods 
@@ -22,6 +24,7 @@ classdef Environment < handle
                object = varargin{i};
                self.AddObject(object);
            end
+           
            
            if (self.lightCurtain ~= EnvironmentObject.empty)
                self.lightCurtain = LightCurtain(self.foundation);
@@ -59,6 +62,10 @@ classdef Environment < handle
                self.obstacleObjectIndex = self.obstacleObjectIndex + 1;
            end
            
+           if strcmp(object.type, 'safety')
+              self.safetyObject{self.safetyObjectIndex} = object;
+              self.safetyObjectIndex = self.safetyObjectIndex + 1;
+           end
            
        end
        %% Draw Background
@@ -68,20 +75,20 @@ classdef Environment < handle
           groundImg = imread('ground.jpg');
           
           % Background 2
-          xImage = [-1.3 1.3; -1.3 1.3];
-          yImage = [-0.75 -0.75; -0.75 -0.75];
+          xImage = [-1.5 1.5; -1.5 1.5];
+          yImage = [-1 -1; -1 -1];
           zImage = [1.5 1.5; 0 0];
           surf(xImage, yImage, zImage, 'CData', backgroundImg2, 'FaceColor', 'texturemap');
           
           % Background 1
-          xImage = [-1.3 -1.3; -1.3 -1.3];
-          yImage = [-0.75 0.75; -0.75 0.75];
+          xImage = [-1.5 -1.5; -1.5 -1.5];
+          yImage = [-1 1; -1 1];
           zImage = [1.5 1.5; 0 0];
           surf(xImage, yImage, zImage, 'CData', backgroundImg1, 'FaceColor', 'texturemap');
           
           % Ground
-          xImage = [-1.3 -1.3; 1.3 1.3];
-          yImage = [-0.75 0.75; -0.75 0.75];
+          xImage = [-1.5 -1.5; 1.5 1.5];
+          yImage = [-1 1; -1 1];
           zImage = [0 0; 0 0];
           surf(xImage, yImage, zImage, 'CData', groundImg, 'FaceColor', 'texturemap');
        end
@@ -108,6 +115,10 @@ classdef Environment < handle
            
            for i = 1:size(self.deposit,2)
                self.deposit{i}.Display();
+           end
+           
+           for i = 1:size(self.safetyObject, 2)
+              self.safetyObject{i}.Display(); 
            end
            
            self.robot.Display();
