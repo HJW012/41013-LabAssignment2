@@ -34,11 +34,11 @@ classdef GlobalController < handle
           cone4 = EnvironmentObject('Type', 'safety', 'ModelPath', 'cone.ply', 'Pose', transl(-1.25, 0.75, 0));
           estop = EnvironmentObject('Type', 'safety', 'ModelPath', 'EStop.ply', 'Pose', transl(0, 0.8, 0));
        
-          self.environment = Environment(table, blueCrate, yellowCrate, redCrate, cone1, cone2, cone3, cone4, estop);
+          self.environment = Environment(blueCrate, yellowCrate, redCrate, cone1, cone2, cone3, cone4, estop);
           self.robot = Dobot(transl(0, 0, 0));
           self.robot.GenerateLinearRail([-0.45, 0, 0.8911]);
           self.environment.AddRobot(self.robot);
-          
+          self.environment.AddObject(table);
           self.camera = RGBCamera('CentrePose', transl(0, 0, 2.5) * troty(pi));
           
           self.environment.Display();
@@ -93,13 +93,10 @@ classdef GlobalController < handle
            
            % Calculate Pick Up and Deposit locations
            self.camera.LocateObjects();
-           
-           
-           
-           
                      
-           % NEED TO FIND WAY OF DOING THIS USING THE COLOURS OF EACH
-           % TARGET OBJECT
+           % Determining if blobs are targets or deposit locations based on
+           % blob area
+           %{
            redIndex = 1;
            greenIndex = 1;
            blueIndex = 1;
@@ -127,23 +124,9 @@ classdef GlobalController < handle
                       blueIndex = blueIndex + 1;
                   end 
                end
-           end
-           
-           %{
-           self.redDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(1,1), self.camera.globalCentroids(1,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(1)));
-           self.redTargetLocations(:,:,1) = eye(4) * transl(self.camera.globalCentroids(4,1), self.camera.globalCentroids(4,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(4)));
-           self.greenDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(2,1), self.camera.globalCentroids(2,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(2)));
-           self.greenTargetLocations(:,:,1) = eye(4) * transl(self.camera.globalCentroids(5,1), self.camera.globalCentroids(5,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(5)));
-           self.greenTargetLocations(:,:,2) = eye(4) * transl(self.camera.globalCentroids(7,1), self.camera.globalCentroids(7,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(7)));
-           self.blueDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(3,1), self.camera.globalCentroids(3,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(3)));
-           self.blueTargetLocations(:,:,1) = eye(4) * transl(self.camera.globalCentroids(6,1), self.camera.globalCentroids(6,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(6)));
+           end           
            %}
-           % NEED TO FIX THE CODE ABOVE SO THAT IT IS NOT HARD CODED
-           
-           
- 
-
-           
+           self.AssignCentroids();
            
            % Drive to pick up location on linear slide
            redSize = size(self.redTargetLocations);
@@ -212,17 +195,7 @@ classdef GlobalController < handle
 
                    self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);   
                end
-           end
-           
-           
-           
-%            self.hand = EnvironmentObject('Type', 'misc', 'ModelPath', 'hand.ply', 'Pose', transl(-0.2, 0.45, self.environment.foundation.dimensions(1,3)+0.4), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
-%            self.hand.SetPose(self.hand.pose * trotz(-pi/2));
-%            self.hand.Display();
-%            
-%            self.environment.AddObject(self.hand);    
-
-           
+           end    
            
            greenSize = size(self.greenTargetLocations);
            if greenSize(1) > 0
@@ -375,21 +348,40 @@ classdef GlobalController < handle
            end
            
        end
-       %% Init Environment
-       function InitEnvironment(self)
-           
-       end
-       
        %% Distance between poses
        function dist = DistanceBetweenPoses(self, pose1, pose2)
             dist = sqrt(((pose1(1,4)-pose2(1,4))^2 + (pose1(2,4)-pose2(2,4))^2 + (pose1(3,4)-pose2(3,4))^2));
        end
        %% Choose which targets are associated with each blob centroid
        function AssignCentroids(self)
+           redIndex = 1;
+           greenIndex = 1;
+           blueIndex = 1;
            [numRows numCols] = size(self.camera.globalCentroids);
-           for i = 0:numRows
-               
-           end
+           for i = 1:numRows
+               if self.camera.globalCentroidColours(i) == 'r'
+                  if self.camera.globalCentroidAreas(i) >= 3000
+                      self.redDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                  else
+                      self.redTargetLocations(:,:,redIndex) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                      redIndex = redIndex + 1;
+                  end
+               elseif self.camera.globalCentroidColours(i) == 'g'
+                  if self.camera.globalCentroidAreas(i) >= 3000
+                      self.greenDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                  else
+                      self.greenTargetLocations(:,:,greenIndex) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                      greenIndex = greenIndex + 1;
+                  end
+               else %blue
+                  if self.camera.globalCentroidAreas(i) >= 3000
+                      self.blueDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                  else
+                      self.blueTargetLocations(:,:,blueIndex) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
+                      blueIndex = blueIndex + 1;
+                  end 
+               end
+           end  
        end
        %% Move Arm
         function MoveRobotArm(self, targetPose)

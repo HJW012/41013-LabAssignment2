@@ -64,6 +64,7 @@ handles.robot = Dobot('BasePose', transl(0, 0, 0));
 handles.robot.GenerateLinearRail([0,0,0]);
 hold on;
 handles.robot.Display;
+
 handles.teachDist = 0.002;
 set(handles.slider_q1, 'min', rad2deg(handles.robot.model.qlim(1, 1)));
 set(handles.slider_q1, 'max', rad2deg(handles.robot.model.qlim(1, 2)));
@@ -109,12 +110,6 @@ guidata(hObject, handles);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = AdvancedTeach_OutputFcn(hObject, eventdata, handles) 
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Get default command line output from handles structure
 varargout{1} = handles.output;
 
 
@@ -159,11 +154,6 @@ guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function slider_LR_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider_LR (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a light gray background.
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
@@ -171,12 +161,6 @@ end
 
 
 function txt_LRX_Callback(hObject, eventdata, handles)
-% hObject    handle to txt_LRX (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txt_LRX as text
-%        str2double(get(hObject,'String')) returns contents of txt_LRX as a double
 localQ0 = handles.robot.model.getpos;
 LRValue = str2double(handles.txt_LRX.String);
 handles.robot.model.base = handles.startingBase * transl(LRValue, 0, 0);

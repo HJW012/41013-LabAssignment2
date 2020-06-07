@@ -8,7 +8,7 @@ classdef Environment < handle
        targetIndex = 1;
        depositIndex = 1;
        miscObjectIndex = 1;
-       lightCurtain;
+       lightCurtain = LightCurtain.empty;
        robot;
        checkObjects;
        checkObjectIndex = 1;
@@ -24,6 +24,7 @@ classdef Environment < handle
                object = varargin{i};
                self.AddObject(object);
            end
+           
            
            if (self.lightCurtain ~= EnvironmentObject.empty)
                self.lightCurtain = LightCurtain(self.foundation);

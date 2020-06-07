@@ -49,6 +49,7 @@ classdef LightCurtain < handle
        end
        
        function Display(self)
+           self.model.Display();
            for i = 1:1:size(self.lightCurtain, 1)
                 point1 = [self.lightCurtain(i,1), self.lightCurtain(i,2), self.lightCurtain(i,3)];
                 point2 = [self.lightCurtain(i,4), self.lightCurtain(i,5), self.lightCurtain(i,6)];
