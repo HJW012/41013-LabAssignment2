@@ -220,48 +220,32 @@ classdef Dobot < handle
                 pause(0.01);
             end
         end
-        
-        
-        
-        %% Attach Remote Controller
-        function AttachRemoteControl(self, varargin)
-            if 0 < nargin && mod(nargin, 2) == 0
-                for i = 1:2:nargin
-                    knownParam = 0;
-                    
-                    if strcmp(varargin{i}, 'ID')
-                        self.remoteControllerID = varargin{i+1};
-                        knownParam = 1;
-                        disp('Info - Dobot Class: Remote Controller ID set');
-                    end
-                    
-                    if knownParam == 0
-                        warning("Warning - Dobot Class: Unknown Input: " + varargin{i+1});
-                    end
-                end
-            else
-                warning("Warning - Dobot Class: Too Few Inputs");
-            end  
-            
-            self.remoteControllerAttached = true;
-            self.remoteController = vrjoystick(self.remoteControllerID);
-        end
         %% Distance Formula
         % Simple function used to calculate the distance between two,
         % 3-dimensional poses
         function dist = poseDist(self, pose1, pose2)
            dist = abs(sqrt( (pose1(1, 4) - pose2(1, 4))^2 + (pose1(2, 4) - pose2(2, 4))^2 + (pose1(3, 4) - pose2(3, 4))^2 )); 
         end
-%         %% Move Object
-%         function MoveObject(self, obj)
-%             EEPose = self.model.fkine(self.model.getpos);
-%             if ~isequal(obj, self.grabbedObject)
-%                self.grabbedObject = obj;
-%                self.objectOffset = inv(EEPose) * obj.pose;
-%             end
-%             
-%             obj.SetPose(EEPose * self.objectOffset);
-%         end
+        %% MoveObject - Move object with Robot
+        function MoveObject(self, obj)
+            % Get current EE Pose
+            EEPose = self.model.fkine(self.model.getpos);
+            
+            % If current picked object isn't set in class properties - this
+            % prevents calculating new relative transform in every loop
+            % cycle
+            if ~isequal(obj, self.grabbedObject)
+               self.grabbedObject = obj;
+               
+               % Use offset transform to keep relative pose between picked
+               % object and end effector - works with translation AND
+               % rotation
+               self.objectOffset = inv(EEPose) * obj.pose;
+            end
+            
+            % Set new object location
+            obj.SetPose(EEPose * self.objectOffset);
+        end
         
         %% GetAlgebraicDist
         % This function was taken from '41013 - Robotics' Laboratory 6

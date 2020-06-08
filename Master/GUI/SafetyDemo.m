@@ -94,7 +94,7 @@ handles.cam = CentralCamera('focal', 0.08, 'pixel', 10e-5, ...
 handles.fps = 25;
 
 % End Effector Velocity Gain
-handles.lambda = 2;
+handles.lambda = 4;
 
 % Depth of each point in camera plane - guess and check to find best value
 handles.depth = 0.15;
@@ -122,11 +122,10 @@ varargout{1} = handles.output;
 
 % --- Executes on button press in check_Controller.
 function check_Controller_Callback(hObject, eventdata, handles)
-% hObject    handle to check_Controller (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% This function was derived from work completed in '41013 -
+% Robotics' Laboratory 8 Exercises and modified to suit this
+% application.
 
-% Hint: get(hObject,'Value') returns toggle state of check_Controlle
 disp('Check box change');
 guidata(hObject, handles);
 while get(hObject, 'Value') == 1.0 && handles.startRetreating
@@ -172,8 +171,7 @@ while get(hObject, 'Value') == 1.0 && handles.startRetreating
     % - Each column of Jacobian indicates velocity of the point with
     % respect to the corresponding component of the velocity vector
     handles.J = handles.cam.visjac_p(handles.uv, handles.depth );
-    fig1 = figure(3);
-    handles.cam.flowfield([1 1 1 1 1 1]);
+    
     
     % Compute velocity of camera in camera plane using simple linear
     % controller
@@ -224,10 +222,14 @@ while get(hObject, 'Value') == 1.0 && handles.startRetreating
     drawnow;
 
 
-     pause(1/handles.fps);
+    pause(1/handles.fps);
 
     %update current joint position
     handles.q0 = handles.q;
+
+    % Flowfield to show camera velocity in z direction
+    fig1 = figure(3);
+    handles.cam.flowfield([0 0 1 0 0 0]);
     
     guidata(hObject, handles);
 end
@@ -362,11 +364,10 @@ guidata(hObject, handles);
 
 % --- Executes on button press in btn_Retreat.
 function btn_Retreat_Callback(hObject, eventdata, handles)
-% hObject    handle to btn_Retreat (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% This function was derived from work completed in '41013 -
+% Robotics' Laboratory 8 Exercises and modified to suit this
+% application.
 
-%Set boolean to keep retreating even when using controller
 handles.startRetreating = true;
 pause(0.1);
 

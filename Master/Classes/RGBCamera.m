@@ -314,7 +314,7 @@ classdef RGBCamera < handle
            self.ConvertImage();
            self.CalcBlobs();
            self.MapCentroids();
-           %self.PlotCentroids();
+           self.PlotCentroids();
        end
    end
 end

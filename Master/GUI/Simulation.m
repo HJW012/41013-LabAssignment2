@@ -90,13 +90,16 @@ if ~handles.EStopPress
     handles.InsertObstruction.Enable = 'on';
     handles.RemoveObstruction.Enable = 'on';
     guidata(hObject, handles);
+    disp("EStop Released - Robot Resuming");
     handles.plc.emergencyStop = 0;
+    
 else
     handles.InsertObstacle.Enable = 'off';
     handles.RemoveObstacle.Enable = 'off';
     handles.InsertObstruction.Enable = 'off';
     handles.RemoveObstruction.Enable = 'off';
     guidata(hObject, handles);
+    disp("EStop Pressed - Robot Stopping");
     handles.plc.emergencyStop = 1;
 end
 
@@ -218,9 +221,9 @@ end
 % --- Executes on button press in btn_InsertTarget.
 function btn_InsertTarget_Callback(hObject, eventdata, handles)
 % Insert target object at desired location
-targetX = str2double(get(handles.txt_TargetX, 'String'))
-targetY = str2double(get(handles.txt_TargetY, 'String'))
-targetRot = str2double(get(handles.txt_TargetRot, 'String'))
+targetX = str2double(get(handles.txt_TargetX, 'String'));
+targetY = str2double(get(handles.txt_TargetY, 'String'));
+targetRot = str2double(get(handles.txt_TargetRot, 'String'));
 targetPose = transl(targetX, targetY, handles.plc.environment.foundation.dimensions(3)) * trotz(deg2rad(targetRot));
 
 % Select target object of choice
