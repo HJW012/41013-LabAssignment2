@@ -65,7 +65,9 @@ handles.btn_EStop.Enable = 'off';
 hold on;
 axes(handles.axes_Simulation);  %Set axes in GUI as current axes to plot all simulation objects
 
+%handles.plc.environment.Display();
 disp('Initialisation Complete');
+
 
 guidata(hObject, handles);
 
@@ -106,7 +108,13 @@ guidata(hObject, handles);
 
 % --- Executes on button press in btn_InsertObstruction.
 function btn_InsertObstruction_Callback(hObject, eventdata, handles)
+%{
+handles.plc.hand = EnvironmentObject('Type', 'misc', 'ModelPath', 'hand.ply', 'Pose', transl(-0.2, 0.45, handles.plc.environment.foundation.dimensions(1,3)+0.1), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'y');
+handles.plc.hand.SetPose(handles.plc.hand.pose * trotz(-pi/2));
+handles.plc.hand.Display();
 
+handles.plc.environment.AddObject(handles.plc.hand);  
+%}
 handles.plc.InsertObstruction();
 guidata(hObject, handles);
 
@@ -154,6 +162,8 @@ end
 
 % --- Executes on button press in btn_RemoveObstacle.
 function btn_RemoveObstacle_Callback(hObject, eventdata, handles)
+%handles.plc.obstacle.Remove();
+%handles.plc.environment.obstacleObjects{1}.pose = handles.plc.obstacle.pose;
 handles.plc.RemoveObstacle();
 guidata(hObject, handles);
 
@@ -162,6 +172,9 @@ function btn_InsertObstacle_Callback(hObject, eventdata, handles)
 obstacleX = str2double(handles.txt_ObstacleX.String);
 obstacleY = str2double(handles.txt_ObstacleY.String);
 obstacleZ = str2double(handles.txt_ObstacleZ.String);
+%handles.plc.obstacle = EnvironmentObject('Type', 'obstacle', 'ModelPath', 'obstacleBall.ply', 'Pose', transl(obstacleX, obstacleY, obstacleZ), 'Dimensions', [0.1 0.1 0.1], 'GeneralColour', 'y');
+%handles.plc.obstacle.Display();
+%handles.plc.environment.AddObject(handles.plc.obstacle);
 
 obstaclePose = transl(obstacleX, obstacleY, obstacleZ);
 handles.plc.InsertObstacle(obstaclePose);
@@ -219,12 +232,27 @@ targetY = str2double(get(handles.txt_TargetY, 'String'))
 targetRot = str2double(get(handles.txt_TargetRot, 'String'))
 targetPose = transl(targetX, targetY, handles.plc.environment.foundation.dimensions(3)) * trotz(deg2rad(targetRot));
 if get(handles.rad_TargetRed, 'Value') == 1
+    disp('Red Pen');
+    %tempObject = EnvironmentObject('Type', 'target', 'ModelPath', 'redPen.ply', 'Pose', transl(targetX, targetY, handles.plc.environment.foundation.dimensions(3)) * trotz(deg2rad(targetRot)), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'r');
+    %tempObject.Display();
+    %tempObject.SetPose(tempObject.pose * trotz(deg2rad(targetRot)));
+    %handles.plc.environment.AddObject(tempObject);
     handles.plc.InsertTarget(targetPose, 'r');
 
 elseif get(handles.rad_TargetBlue, 'Value') == 1
+    disp('Blue Pen');
+    %tempObject = EnvironmentObject('Type', 'target', 'ModelPath', 'bluePen.ply', 'Pose', transl(targetX, targetY, handles.plc.environment.foundation.dimensions(3)), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'b');
+    %tempObject.Display();
+    %tempObject.SetPose(tempObject.pose * trotz(deg2rad(targetRot)));
+    %handles.plc.environment.AddObject(tempObject);
     handles.plc.InsertTarget(targetPose, 'b');
 
 else
+    disp('Pencil');
+    %tempObject = EnvironmentObject('Type', 'target', 'ModelPath', 'pencil.ply', 'Pose', transl(targetX, targetY, handles.plc.environment.foundation.dimensions(3)), 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'g');
+    %tempObject.Display();
+    %tempObject.SetPose(tempObject.pose * trotz(deg2rad(targetRot)));
+    %handles.plc.environment.AddObject(tempObject);
     handles.plc.InsertTarget(targetPose, 'g');
 
 end

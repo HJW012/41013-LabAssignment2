@@ -633,7 +633,11 @@ classdef GlobalController < handle
               self.environment.robot.model.animate(self.environment.robot.model.getpos);
 
               for k = 1:1:size(self.environment.robot.object, 2)
+                % Set the desired object pose to be at the end effector
+                objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
+
                 % Update the object's position
+                %self.environment.robot.object(k).MoveObject(objectPose);
                 self.environment.robot.object(k);
                 self.environment.robot.MoveObject(self.environment.robot.object(k));
               end

@@ -26,9 +26,8 @@ classdef Environment < handle
            end
            
            
-           if isequal(self.lightCurtain, LightCurtain.empty)
-               disp("her");
-               self.lightCurtain = LightCurtain(self.foundation(1));             
+           if (self.lightCurtain == EnvironmentObject.empty)
+               self.lightCurtain = LightCurtain(self.foundation);             
            end
            
        end

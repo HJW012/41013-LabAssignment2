@@ -13,7 +13,6 @@ classdef RGBCamera < handle
        
        object = EnvironmentObject.empty;
        objectPlot;
-       mesh = [];
        fig = figure();
        figAxes = axes();
        blobPerimeters;
@@ -101,8 +100,8 @@ classdef RGBCamera < handle
                 self.object(1, i).cameraPlot = self.cam.plot(self.object(1, i).modelV', 'Tobj', self.object(1, i).pose, 'MarkerSize', 0.000001, 'MarkerEdgeColor', 'white', 'MarkerFaceColor', 'white');  
                 hold on;
                 self.cam.hold();
-
             end
+            
             self.fig(1) = self.cam.figure();
             set(self.fig(1), 'Resize', 'off');
             set(0, 'CurrentFigure', self.fig(1));
@@ -139,7 +138,6 @@ classdef RGBCamera < handle
            self.blobOrientations = cat(1, s.Orientation);
            self.blobBB = cat(1, s.Extent);
            self.blobAreas = cat(1, s.Area);
-           
        end
        %% Plot Centroids
        function PlotCentroids(self)
@@ -147,8 +145,9 @@ classdef RGBCamera < handle
           
           imshow(self.BWim);
           hold on;
-          [numRows numCols] = size(self.blobCentroids);
           
+          [numRows numCols] = size(self.blobCentroids);
+
           for i = 1:numRows
              plot(self.blobCentroids(i, 1), self.blobCentroids(i, 2), 'b*'); 
           end
@@ -208,7 +207,7 @@ classdef RGBCamera < handle
                        self.globalCentroidColours(j) = 'g';
                    end
                    
-                   if pixelColours(i, 3) >= 150
+                   if pixelColours(i, 3) >= 100
                        disp('BLUE OBJECT DETECTED');
                        self.globalCentroidColours(j) = 'b';
                    end

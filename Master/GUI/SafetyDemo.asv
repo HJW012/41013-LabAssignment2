@@ -367,13 +367,13 @@ while get(handles.check_Controller, 'Value') == 0 && handles.startRetreating
     
      %Maximum angular velocity cannot exceed 320 degrees/s - user guide
      %says this is limit
-     handles.ind=find(handles.qp>deg2rad(320));
+     handles.ind=find(handles.qp>rad2deg);
      if ~isempty(handles.ind)
-         handles.qp(handles.ind)=deg2rad(320);
+         handles.qp(handles.ind)=pi;
      end
-     handles.ind=find(handles.qp<-deg2rad(320));
+     handles.ind=find(handles.qp<-pi);
      if ~isempty(handles.ind)
-         handles.qp(handles.ind)=-deg2rad(320);
+         handles.qp(handles.ind)=-pi;
      end
 
     %Update joints 
@@ -388,6 +388,10 @@ while get(handles.check_Controller, 'Value') == 0 && handles.startRetreating
 
 
      pause(1/handles.fps);
+
+    if ~isempty(200) && (ksteps > 200)
+        break;
+    end
 
     %update current joint position
     handles.q0 = handles.q;
