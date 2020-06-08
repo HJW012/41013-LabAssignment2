@@ -47,21 +47,17 @@ classdef Environment < handle
            end
            
            % If a target object has been passed, store the object in the
-           % targets matrix
+           % targets matric
            if strcmp(object.type, 'target')
                self.targets{1, self.targetIndex} = object;
                self.targetIndex = self.targetIndex + 1;
            end
            
-           % If a deposit object has been passed, store the object in the
-           % deposit matrix
            if strcmp(object.type, 'deposit')
                self.deposit{1, self.depositIndex} = object;
                self.depositIndex = self.depositIndex + 1;
            end
            
-           % If a misc object has been passed, store the object in the
-           % check objects matrix
            if strcmp(object.type, 'misc') 
                self.miscObjects{self.miscObjectIndex} = object;
                self.miscObjectIndex = self.miscObjectIndex + 1;
@@ -69,15 +65,11 @@ classdef Environment < handle
                self.checkObjectIndex = self.checkObjectIndex + 1;
            end
            
-           % If an obstacle has been passed, store the object in the
-           % obstacle objects matrix
            if strcmp(object.type, 'obstacle') 
                self.obstacleObjects{self.obstacleObjectIndex} = object;
                self.obstacleObjectIndex = self.obstacleObjectIndex + 1;
            end
            
-           % If a safety object has been passed, store the object in the
-           % safety object matrix
            if strcmp(object.type, 'safety')
               self.safetyObject{self.safetyObjectIndex} = object;
               self.safetyObjectIndex = self.safetyObjectIndex + 1;
@@ -85,28 +77,23 @@ classdef Environment < handle
            
        end
        %% Draw Background
-       % Function used to generate the background images
        function DrawBackground(self)
-          % Read images into variables
           backgroundImg1 = imread('background1.jpg');
           backgroundImg2 = imread('background2.jpg');
           groundImg = imread('ground.jpg');
           
-          % Generate backgrounds as surfaces in the environment
           % Background 2
           xImage = [-1.5 1.5; -1.5 1.5];
           yImage = [-1 -1; -1 -1];
           zImage = [1.5 1.5; 0 0];
           surf(xImage, yImage, zImage, 'CData', backgroundImg2, 'FaceColor', 'texturemap');
           
-          % Generate backgrounds as surfaces in the environment
           % Background 1
           xImage = [-1.5 -1.5; -1.5 -1.5];
           yImage = [-1 1; -1 1];
           zImage = [1.5 1.5; 0 0];
           surf(xImage, yImage, zImage, 'CData', backgroundImg1, 'FaceColor', 'texturemap');
           
-          % Generate backgrounds as surfaces in the environment
           % Ground
           xImage = [-1.5 -1.5; 1.5 1.5];
           yImage = [-1 1; -1 1];
@@ -114,43 +101,33 @@ classdef Environment < handle
           surf(xImage, yImage, zImage, 'CData', groundImg, 'FaceColor', 'texturemap');
        end
        %% Add Robot
-       % Add robot into the environment
        function AddRobot(self, robot)
            self.robot = robot;
        end
-       %% Display Environment
-       % Function used to display all objects in the environment
+       %% Display Environment - only run once!
        function Display(self)         
-           % Display table
            for i = 1:size(self.foundation,2)
                self.foundation(i).Display();
            end
            
            hold on;
            
-           % Display targets
            for i = 1:size(self.targets,2)
                self.targets{i}.Display();
            end
            
-           % Display deposit locations
            for i = 1:size(self.deposit,2)
                self.deposit{i}.Display();
            end
            
-           % Display safety objects
            for i = 1:size(self.safetyObject, 2)
               self.safetyObject{i}.Display(); 
            end
            
-           % Display Dobot
            self.robot.Display();
 
-           % Display the light curtain
            self.lightCurtain.Display();
-              
-           % Display the background images to create the realistic
-           % environment
+                      
            self.DrawBackground();
            axis equal;
            camlight;
