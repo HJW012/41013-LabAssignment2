@@ -1,3 +1,4 @@
+%% Dobot Class
 classdef Dobot < handle
     properties
         model;                                              % Stores SerialLink model        
@@ -199,7 +200,7 @@ classdef Dobot < handle
                 self.model.points{i} = [X(:),Y(:),Z(:)];
                 warning off;
                 self.model.faces{i} = delaunay(self.model.points{i});    %Triangulation
-
+                warning on;
             end
 
             % Iterate through each joint angle in the calculated trajectory
@@ -251,16 +252,16 @@ classdef Dobot < handle
         function dist = poseDist(self, pose1, pose2)
            dist = abs(sqrt( (pose1(1, 4) - pose2(1, 4))^2 + (pose1(2, 4) - pose2(2, 4))^2 + (pose1(3, 4) - pose2(3, 4))^2 )); 
         end
-%         %% Move Object
-%         function MoveObject(self, obj)
-%             EEPose = self.model.fkine(self.model.getpos);
-%             if ~isequal(obj, self.grabbedObject)
-%                self.grabbedObject = obj;
-%                self.objectOffset = inv(EEPose) * obj.pose;
-%             end
-%             
-%             obj.SetPose(EEPose * self.objectOffset);
-%         end
+        %% Move Object
+        function MoveObject(self, obj)
+            EEPose = self.model.fkine(self.model.getpos);
+            if ~isequal(obj, self.grabbedObject)
+               self.grabbedObject = obj;
+               self.objectOffset = inv(EEPose) * obj.pose;
+            end
+            
+            obj.SetPose(EEPose * self.objectOffset);
+        end
         
         %% GetAlgebraicDist
         % This function was taken from '41013 - Robotics' Laboratory 6
@@ -301,16 +302,28 @@ classdef Dobot < handle
                 fkMatrix(:,:,i+1) = fkMatrix(:,:,i) * trotz(jointAngles(i)+L(i).offset) * transl(0,0,L(i).d) * transl(L(i).a,0,0) * trotx(L(i).alpha);
             end
 
-            % Iterate through each point of the forward kinematic
+            % Iterate through each point of the forward kinematic chain
             for i = 1: size(fkMatrix,3)
+                % Transform the obstacle Vertices to the ith link position
                 pointsAndOnes = [inv(fkMatrix(:,:,i)) * [obstaclePoints,ones(size(obstaclePoints,1),1)]']';
+                % Update the points to check against the ellipse
                 updatedPoints = pointsAndOnes(:,1:3);
+                
+                % Get the relevant radii
                 radius = radii(i,:);
+                
+                % Calculate the algebraic distance between the updated
+                % points and the ellipsoid
                 algebraicDist = self.GetAlgebraicDist(updatedPoints, centrePoint, radius);
+                
+                % Calculate the points inside the ellipsoid
                 pointsInside = find(algebraicDist < 1);
+                
+                % If there are more than zero points inside the ellipsoid
+                % the robot has collided with the obstacle, set flag to 1
+                % and break out of the for loop
                 if 0 < pointsInside
                     collisionCheck = 1;
-                   % disp(['There are ', num2str(size(pointsInside,1)),' points inside the ',num2str(i),'th ellipsoid']);
                     break;
                 else
                     collisionCheck= 0;
