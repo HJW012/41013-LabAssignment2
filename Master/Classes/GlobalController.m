@@ -189,7 +189,9 @@ classdef GlobalController < handle
            end
            
            % Return robot to starting position
-           self.MoveToTargetLinearRail(startingPose(1,4))
+           self.MoveToTargetLinearRail(startingPose(1,4));
+           
+           disp('Desk Organisation Task Complete');
            
        end
        
