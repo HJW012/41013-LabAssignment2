@@ -33,10 +33,11 @@ classdef GlobalController < handle
           cone2 = EnvironmentObject('Type', 'safety', 'ModelPath', 'cone.ply', 'Pose', transl(-1.25, -0.75, 0));
           cone3 = EnvironmentObject('Type', 'safety', 'ModelPath', 'cone.ply', 'Pose', transl(1.25, 0.75, 0));
           cone4 = EnvironmentObject('Type', 'safety', 'ModelPath', 'cone.ply', 'Pose', transl(-1.25, 0.75, 0));
-          estop = EnvironmentObject('Type', 'safety', 'ModelPath', 'EStop.ply', 'Pose', transl(0, 0.55, 0.8911) * trotx(-pi/2));
+          estopStand = EnvironmentObject('Type', 'safety', 'ModelPath', 'EstopStand.ply', 'Pose', transl(0, 0.8, 0));
+          estop = EnvironmentObject('Type', 'safety', 'ModelPath', 'EStop.ply', 'Pose', transl(0,0.8, 0.75));
        
           % Create the Environment object and pass it all the fixed objects
-          self.environment = Environment(table, blueCrate, yellowCrate, redCrate, cone1, cone2, cone3, cone4, estop);
+          self.environment = Environment(table, blueCrate, yellowCrate, redCrate, cone1, cone2, cone3, cone4, estopStand, estop);
           
           % Create the robot
           self.environment.robot = Dobot('BasePose', transl(0, 0, 0));
