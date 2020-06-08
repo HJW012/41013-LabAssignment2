@@ -19,11 +19,12 @@ classdef GlobalController < handle
    
    methods
        function self = GlobalController()% environment, camera)  
-          % self.environment = environment;
-           %self.camera = camera;
+
        end
        %% Simulation Setup
        function Setup(self)
+          % Create fixed objects in the scene which do not move during
+          % operation
           table = EnvironmentObject('Type', 'foundation', 'ModelPath', 'table.ply', 'Pose', transl(0, 0, 0), 'Dimensions', [2.1956 1.0097 0.8911]);
           blueCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'blueCrate.ply', 'Pose', transl(0.75, 0.2, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'b');
           yellowCrate = EnvironmentObject('Type', 'deposit', 'ModelPath', 'yellowCrate.ply', 'Pose', transl(0.75, 0, 0.8911), 'Dimensions', [0.24 0.16 0.0664], 'GeneralColour', 'g');
@@ -34,31 +35,51 @@ classdef GlobalController < handle
           cone4 = EnvironmentObject('Type', 'safety', 'ModelPath', 'cone.ply', 'Pose', transl(-1.25, 0.75, 0));
           estop = EnvironmentObject('Type', 'safety', 'ModelPath', 'EStop.ply', 'Pose', transl(0, 0.8, 0));
        
+          % Create the Environment object and pass it all the fixed objects
           self.environment = Environment(blueCrate, yellowCrate, redCrate, cone1, cone2, cone3, cone4, estop);
+          
+          % Create the robot
           self.robot = Dobot(transl(0, 0, 0));
+          %Generate the robot's linear rail
           self.robot.GenerateLinearRail([-0.45, 0, 0.8911]);
+          
+          % Add the robot to the environment
           self.environment.AddRobot(self.robot);
+          
+          % Add the table to the environment
           self.environment.AddObject(table);
           self.camera = RGBCamera('CentrePose', transl(0, 0, 2.5) * troty(pi));
           
+          % Display the objects in the environment.
           self.environment.Display();
        end
        %% Insert Obstacle for collision detection
+       % Function used to generate an obstacle to create a forced collision
+       % with the robot to avoid
        function InsertObstacle(self, pose)
+          % Create the ball obstacle
           self.obstacle = EnvironmentObject('Type', 'obstacle', 'ModelPath', 'obstacleBall.ply', 'Pose', pose, 'Dimensions', [0.1 0.1 0.1], 'GeneralColour', 'y');
+          % Display the ball
           self.obstacle.Display();
+          
+          % Add the obstacle to the environment
           self.environment.AddObject(self.obstacle);
        end
        %% Remove Obstacle
+       % Function used to remove an obstacle from the environment
        function RemoveObstacle(self)
+          % Call the remove function for the object
           self.obstacle.Remove();
+          % Update the pose of the obstacle object in the Environment
           self.environment.obstacleObjects{1}.pose = self.obstacle.pose;
        end
-       %% Add Environment
-       function AddEnvironment(self, environment)
-           self.environment = environment;
-       end
+%        %% Add Environment
+%        function AddEnvironment(self, environment)
+%            self.environment = environment;
+%        end
        %% Insert Light Curtain Obstruction
+       % Function used to insert an object into the light curtain to
+       % demonstrate the safety feature of the light curtain
        function InsertObstruction(self)
           self.hand = EnvironmentObject('Type', 'misc', 'ModelPath', 'hand.ply','Pose', transl(-0.2, 0.45, self.environment.foundation.dimensions(1,3)+0.1) * trotz(-pi/2), 'Dimensions', [0.1734 0.0123 0.0124]); 
           self.hand.Display();
@@ -96,36 +117,6 @@ classdef GlobalController < handle
                      
            % Determining if blobs are targets or deposit locations based on
            % blob area
-           %{
-           redIndex = 1;
-           greenIndex = 1;
-           blueIndex = 1;
-           [numRows numCols] = size(self.camera.globalCentroids);
-           for i = 1:numRows
-               if self.camera.globalCentroidColours(i) == 'r'
-                  if self.camera.globalCentroidAreas(i) >= 3000
-                      self.redDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
-                  else
-                      self.redTargetLocations(:,:,redIndex) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
-                      redIndex = redIndex + 1;
-                  end
-               elseif self.camera.globalCentroidColours(i) == 'g'
-                  if self.camera.globalCentroidAreas(i) >= 3000
-                      self.greenDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
-                  else
-                      self.greenTargetLocations(:,:,greenIndex) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
-                      greenIndex = greenIndex + 1;
-                  end
-               else %blue
-                  if self.camera.globalCentroidAreas(i) >= 3000
-                      self.blueDepositLocation(:,:,1) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
-                  else
-                      self.blueTargetLocations(:,:,blueIndex) = eye(4) * transl(self.camera.globalCentroids(i,1), self.camera.globalCentroids(i,2), 0.8911) * trotz(deg2rad(self.camera.globalOrientations(i)));
-                      blueIndex = blueIndex + 1;
-                  end 
-               end
-           end           
-           %}
            self.AssignCentroids();
            
            % Drive to pick up location on linear slide
@@ -559,288 +550,111 @@ classdef GlobalController < handle
               increment = distanceToTravel/steps;
               startingPosition = self.environment.robot.model.base(1,4);
               
-              if 0 < size(self.environment.obstacleObjects, 2)
-                  for i = 1:1:size(self.environment.obstacleObjects, 2)
-                      for j = 1:steps
-                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
-                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
-
-                        if checkCollision == 1
-                            self.environment.robot.collisionDetected = 1;
-                            break;
-                        end
-                      end
-                      
-                      self.environment.robot.model.base(1,4) = startingPosition;
-                      
-                      if 0 < self.environment.robot.collisionDetected
-                          break;
-                      end
-                  end
-              end
-              
-              while (self.environment.robot.collisionDetected == 1)
-                   self.environment.robot.collisionDetected = 0;   
-                   for i = 1:1:size(self.environment.obstacleObjects, 2)
-                       for j = 1:steps
-                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
-                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
-
-                        if checkCollision == 1
-                            self.environment.robot.collisionDetected = 1;
-                            break;
-                        end
-                      end
-                      
-                      self.environment.robot.model.base(1,4) = startingPosition;
-                      
-                      if 0 < self.environment.robot.collisionDetected
-                          break;
-                      end
-                   end
-                   
-                   pause(0.01);
-              end
-             
-              for i = 1:steps
-                   self.environment.robot.stop = 0;
-                   if 0 < size(self.environment.checkObjects, 2)
-                       for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
-
-                           if checkCurtain == 1
-                              self.environment.robot.stop = 1;
-                              break;
-                           end
-                       end
-                   end
-                   
-                   tic;
-                   index = 0;
-                   while (self.environment.robot.stop == 1 || self.emergencyStop == 1)
-                       disp('Robot Stopped');
-                       self.environment.robot.stop = 0;
-                       for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
-                           
-                           if (self.environment.checkObjects{j}.pose == self.hand.pose)
-                               index = j;
-                           end
-                           
-                           
-                           if checkCurtain == 1
-                              self.environment.robot.stop = 1;
-                              break;
-                           end
-                       end
-                       pause(0.01);
-                   end
-
-                  self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
-                  self.environment.robot.model.animate(self.environment.robot.model.getpos);
-                  
-                   for k = 1:1:size(self.environment.robot.object, 2)
-                        % Set the desired object pose to be at the end effector
-                        objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
-
-                        % Update the object's position
-                        %self.environment.robot.object(k).MoveObject(objectPose);
-                        self.environment.robot.object(k)
-                        self.environment.robot.MoveObject(self.environment.robot.object(k));
-                   end
-                  
-                  drawnow();
-              end
               disp(1);
-           end
-           
-           if (x < (self.environment.robot.linearRailPose(1,4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robot.baseWidth/2))
+              
+           elseif (x < (self.environment.robot.linearRailPose(1,4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robot.baseWidth/2))
               distance = (self.environment.robot.linearRailPose(1, 4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robotbaseWidth/2) - self.environment.robot.model.base(1,4);
               increment = distance/steps;
               
               startingPosition = self.environment.robot.model.base(1,4);
               
-              if 0 < size(self.environment.obstacleObjects, 2)
-                  for i = 1:1:size(self.environment.obstacleObjects, 2)
-                      for j = 1:steps
-                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
-                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
-
-                        if checkCollision == 1
-                            self.environment.robot.collisionDetected = 1;
-                            break;
-                        end
-                      end
-                      
-                      self.environment.robot.model.base(1,4) = startingPosition;
-                      
-                      if 0 < self.environment.robot.collisionDetected
-                          break;
-                      end
-                  end
-              end
-              
-              while (self.environment.robot.collisionDetected == 1)
-                   self.environment.robot.collisionDetected = 0;   
-                   for i = 1:1:size(self.environment.obstacleObjects, 2)
-                       for j = 1:steps
-                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
-                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
-
-                        if checkCollision == 1
-                            self.environment.robot.collisionDetected = 1;
-                            break;
-                        end
-                      end
-                      
-                      self.environment.robot.model.base(1,4) = startingPosition;
-                      
-                      if 0 < self.environment.robot.collisionDetected
-                          break;
-                      end
-                   end
-                   pause(0.01);
-              end
-              
-              for i = 1:steps
-                   self.environment.robot.stop = 0;
-                   if 0 < size(self.environment.checkObjects, 2)
-                       for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
-
-                           if checkCurtain == 1
-                              self.environment.robot.stop = 1;
-                              break;
-                           end
-                       end
-                   end
-
-                   while (self.environment.robot.stop == 1 || self.emergencyStop == 1)
-                       disp('Robot Stopped');
-                       self.environment.robot.stop = 0;
-                       for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
-
-                           if checkCurtain == 1
-                              self.environment.robot.stop = 1;
-                              break;
-                           end
-                       end
-                       pause(0.01);
-                   end
-                  
-                  
-                  self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
-                  self.environment.robot.model.animate(self.environment.robot.model.getpos);
-                  
-                  for k = 1:1:size(self.environment.robot.object, 2)
-                    % Set the desired object pose to be at the end effector
-                    objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
-
-                    % Update the object's position
-                    %self.environment.robot.object(k).MoveObject(objectPose);
-                    self.environment.robot.object(k)
-                    self.environment.robot.MoveObject(self.environment.robot.object(k));
-                  end
-                  
-                  drawnow();
-              end
               disp(2);
-           end
-           
-           if (x + self.environment.robot.baseWidth/2 > (self.environment.robot.linearRailPose(1,4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robot.linearRailTravelDist))
+              
+           else      
               distance = (self.environment.robot.linearRailPose(1, 4) - self.environment.robot.linearRail.modelMidPoint(1,1) + self.environment.robot.linearRailTravelDist + self.environment.robot.baseWidth/2) - self.environment.robot.model.base(1,4);
               increment = distance/steps;
               
               startingPosition = self.environment.robot.model.base(1,4);
-              
-              if 0 < size(self.environment.obstacleObjects, 2)
-                  for i = 1:1:size(self.environment.obstacleObjects, 2)
-                      for j = 1:steps
-                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
-                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
 
-                        if checkCollision == 1
-                            self.environment.robot.collisionDetected = 1;
-                            break;
-                        end
-                      end
-                      
-                      self.environment.robot.model.base(1,4) = startingPosition;
-                      
-                      if 0 < self.environment.robot.collisionDetected
-                          break;
-                      end
-                  end
-              end
-              
-              while (self.environment.robot.collisionDetected == 1)
-                   self.environment.robot.collisionDetected = 0;   
-                   for i = 1:1:size(self.environment.obstacleObjects, 2)
-                       for j = 1:steps
-                        self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
-                        checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
-
-                        if checkCollision == 1
-                            self.environment.robot.collisionDetected = 1;
-                            break;
-                        end
-                      end
-                      
-                      self.environment.robot.model.base(1,4) = startingPosition;
-                      
-                      if 0 < self.environment.robot.collisionDetected
-                          break;
-                      end
-                   end
-                   pause(0.01);
-              end
-              
-              for i = 1:steps
-                   self.environment.robot.stop = 0;
-                   if 0 < size(self.environment.checkObjects, 2)
-                       for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
-
-                           if checkCurtain == 1
-                              self.environment.robot.stop = 1;
-                              break;
-                           end
-                       end
-                   end
-
-                   while (self.environment.robot.stop == 1 || self.emergencyStop == 1)
-                       disp('Robot Stopped');
-                       self.environment.robot.stop = 0;
-                       for j = 1:size(self.environment.checkObjects, 2)
-                           checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
-
-                           if checkCurtain == 1
-                              self.environment.robot.stop = 1;
-                              break;
-                           end
-                       end
-                       pause(0.01);
-                   end
-                  
-                  
-                  self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
-                  self.environment.robot.model.animate(self.environment.robot.model.getpos);
-                  
-                  
-                  for k = 1:1:size(self.environment.robot.object, 2)
-                    % Set the desired object pose to be at the end effector
-                    objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
-
-                    % Update the object's position
-                    %self.environment.robot.object(k).MoveObject(objectPose);
-                    self.environment.robot.object(k)
-                    self.environment.robot.MoveObject(self.environment.robot.object(k));
-                  end
-                  drawnow();
-              end
               disp(3);
            end
+
+           
+          if 0 < size(self.environment.obstacleObjects, 2)
+              for i = 1:1:size(self.environment.obstacleObjects, 2)
+                  for j = 1:steps
+                    self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+                    checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
+
+                    if checkCollision == 1
+                        self.environment.robot.collisionDetected = 1;
+                        break;
+                    end
+                  end
+
+                  self.environment.robot.model.base(1,4) = startingPosition;
+
+                  if 0 < self.environment.robot.collisionDetected
+                      break;
+                  end
+              end
+          end
+
+          while (self.environment.robot.collisionDetected == 1)
+               self.environment.robot.collisionDetected = 0;   
+               for i = 1:1:size(self.environment.obstacleObjects, 2)
+                   for j = 1:steps
+                    self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+                    checkCollision = self.environment.robot.CollisionCheck(self.environment.robot.model.getpos, self.environment.obstacleObjects{i}.modelMesh.Vertices);
+
+                    if checkCollision == 1
+                        self.environment.robot.collisionDetected = 1;
+                        break;
+                    end
+                  end
+
+                  self.environment.robot.model.base(1,4) = startingPosition;
+
+                  if 0 < self.environment.robot.collisionDetected
+                      break;
+                  end
+               end
+               pause(0.01);
+          end
+
+          for i = 1:steps
+               self.environment.robot.stop = 0;
+               if 0 < size(self.environment.checkObjects, 2)
+                   for j = 1:size(self.environment.checkObjects, 2)
+                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
+
+                       if checkCurtain == 1
+                          self.environment.robot.stop = 1;
+                          break;
+                       end
+                   end
+               end
+
+               while (self.environment.robot.stop == 1 || self.emergencyStop == 1)
+                   disp('Robot Stopped');
+                   self.environment.robot.stop = 0;
+                   for j = 1:size(self.environment.checkObjects, 2)
+                       checkCurtain = self.environment.lightCurtain.CheckLightCurtain(self.environment.checkObjects{j});
+
+                       if checkCurtain == 1
+                          self.environment.robot.stop = 1;
+                          break;
+                       end
+                   end
+                   pause(0.01);
+               end
+
+
+              self.environment.robot.model.base(1, 4) = self.environment.robot.model.base(1,4) + increment;
+              self.environment.robot.model.animate(self.environment.robot.model.getpos);
+
+              for k = 1:1:size(self.environment.robot.object, 2)
+                % Set the desired object pose to be at the end effector
+                objectPose = self.environment.robot.model.fkine(self.environment.robot.model.getpos());
+
+                % Update the object's position
+                %self.environment.robot.object(k).MoveObject(objectPose);
+                self.environment.robot.object(k)
+                self.environment.robot.MoveObject(self.environment.robot.object(k));
+              end
+              drawnow();
+          end
+
         end
        
    end

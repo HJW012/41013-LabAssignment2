@@ -196,7 +196,7 @@ while get(hObject, 'Value') == 1.0 && handles.startRetreating
     drawnow;
 
 
-     pause(1/handles.fps);
+    pause(1/handles.fps);
 
     if ~isempty(200) && (ksteps > 200)
         break;
