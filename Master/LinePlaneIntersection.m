@@ -1,6 +1,9 @@
 %% LinePlaneIntersection
 % This function was taken from '41013 - Robotics' Laboratory 5 Exercises
-
+% This code has been developed by Gavin Paul and is used in this program
+% due to its direct relevance to the functionality of the light curtain
+%
+%
 % Given a plane (normal and point) and two points that make up another line, get the intersection
 % Check == 0 if there is no intersection
 % Check == 1 if there is a line plane intersection between the two points

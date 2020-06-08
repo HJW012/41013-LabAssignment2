@@ -1,17 +1,17 @@
 %% Global Controller Class
 classdef GlobalController < handle
    properties
-       environment; % Environment class object used to store the simulation environment
-       redDepositLocation; % Location of the red deposit crate to store all red pens
-       greenDepositLocation; % Location of green deposit crate to store all pencils
-       blueDepositLocation; % Location of blue deposit crate to store all blue pens
-       redTargetLocations; % Locations of red pens in the environment
-       greenTargetLocations; % Locations of pencils in the environment
-       blueTargetLocations; % Locations of blue pens in the environment
-       camera; % RGB Camera class object for overhead camera
-       hand; % Hand object used to break the light curtain
-       obstacle; % Obstacle object used to force a collision
-       emergencyStop = 0; % Emergency stop signal received from E-Stop button in GUI
+       environment;             % Environment class object used to store the simulation environment
+       redDepositLocation;      % Location of the red deposit crate to store all red pens
+       greenDepositLocation;    % Location of green deposit crate to store all pencils
+       blueDepositLocation;     % Location of blue deposit crate to store all blue pens
+       redTargetLocations;      % Locations of red pens in the environment
+       greenTargetLocations;    % Locations of pencils in the environment
+       blueTargetLocations;     % Locations of blue pens in the environment
+       camera;                  % RGB Camera class object for overhead camera
+       hand;                    % Hand object used to break the light curtain
+       obstacle;                % Obstacle object used to force a collision
+       emergencyStop = 0;       % Emergency stop signal received from E-Stop button in GUI
    end
    
    methods

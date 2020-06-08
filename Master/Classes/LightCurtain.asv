@@ -117,30 +117,19 @@ classdef LightCurtain < handle
             % the light curtain and check if the line between these two
             % points intersects any of the faces of the object
             for i = 1:1:size(self.lightCurtain, 1)
-                % Store paired points in light curtain
+                % G
                 point1 = [self.lightCurtain(i,1), self.lightCurtain(i,2), self.lightCurtain(i,3)];
                 point2 = [self.lightCurtain(i,4), self.lightCurtain(i,5), self.lightCurtain(i,6)];
                 
-                % Iterate through each face in the object
                 for faceIndex = 1:size(tempModelF,1)
-                    % Find a vertex on the plane of the object's face
                     vertOnPlane = tempModelV(tempModelF(faceIndex,1)',:);
-                    
-                    % Check if the line between the two points intersects
-                    % with the face of the object
                     [intersectP,check] = LinePlaneIntersection(faceNormals(faceIndex,:),vertOnPlane,point1,point2); 
-                    
-                    % If the line does intersect and also passes through
-                    % the face of the created by the three vertices on the
-                    % object, set the flag to 1 and break out of the for
-                    % loop
                     if check == 1 && IsIntersectionPointInsideTriangle(intersectP,tempModelV(tempModelF(faceIndex,:)',:))
                         checkCurtain = 1;
                         break;
                     end
                 end
                 
-                % If the flag has been set, break out of the for loop
                 if 0 < checkCurtain
                     break;
                 end
