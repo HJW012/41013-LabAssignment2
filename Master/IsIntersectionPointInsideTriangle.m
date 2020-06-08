@@ -1,4 +1,6 @@
 %% IsIntersectionPointInsideTriangle
+% This function was taken from the '41013 - Robotics' Laboratory 5 Exercises
+
 % Given a point which is known to be on the same plane as the triangle
 % determine if the point is 
 % inside (result == 1) or 

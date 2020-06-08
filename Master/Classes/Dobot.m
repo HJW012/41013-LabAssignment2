@@ -1,9 +1,7 @@
 classdef Dobot < handle
     properties
         model; % Stores SerialLink model
-        
-        %gripperLength = 0.0625; %Length of gripper - cant directly include in DH params
-        
+                
         linearRail; %Attach linear rail for lateral movement - EnvironmentObject object
         
         linearRailAttached = false; % True after generating linear rail
@@ -11,10 +9,6 @@ classdef Dobot < handle
         linearRailPose = transl(0, 0, 0); % Pose for LinearRail
         
         linearRailTravelDist = 1.125-0.157852; %Total rail length - dobot base width
-        
-        %linearRailLength = 1.125; % 
-        
-        %linearRailTargetPose = 0;
         
         remoteController;
         
@@ -32,7 +26,7 @@ classdef Dobot < handle
         
         linkLength = [0.135, 0.139, 0.16, 0.05, 0.0625]; % Length of each SerialLink link
         
-        stop = 0; % Used for Estop, light curtain
+        stop = 0; % Used for light curtain
         
         collisionDetected = 0; % used for collision detection
         
@@ -184,7 +178,6 @@ classdef Dobot < handle
                 check = self.CheckEllipsoidCollision(obstaclePoints, position, radii);
 
                 if check == 1
-                    disp('Collision detected in trajectory, human intervention required to remove obstruction');
                     break;
                 end
                 pause(0.01);
