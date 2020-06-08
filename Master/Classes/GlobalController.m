@@ -81,15 +81,23 @@ classdef GlobalController < handle
        % Function used to insert an object into the light curtain to
        % demonstrate the safety feature of the light curtain
        function InsertObstruction(self)
+          % Create the hand mesh to be displayed inside the light curtain
           self.hand = EnvironmentObject('Type', 'misc', 'ModelPath', 'hand.ply','Pose', transl(-0.2, 0.45, self.environment.foundation.dimensions(1,3)+0.1) * trotz(-pi/2), 'Dimensions', [0.1734 0.0123 0.0124]); 
+          % Display the hand
           self.hand.Display();
+          
+          % Add the object to the Environment
           self.environment.AddObject(self.hand);
        end
        %% Remove Light Curtain Obstruction
+       % Function used to remove the light curtain obstruction
        function RemoveObstruction(self)
+          % Call the remove function for the hand object
           self.hand.Remove(); 
        end
        %% Insert Target
+       % Function called by the GUI to insert the targets into the
+       % environment
        function InsertTarget(self, pose, colour)
           if strcmp(colour, 'r')
              object = EnvironmentObject('Type', 'target', 'ModelPath', 'redPen.ply', 'Pose', pose, 'Dimensions', [0.1734 0.0123 0.0124], 'GeneralColour', 'r');

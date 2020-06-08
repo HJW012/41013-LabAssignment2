@@ -631,11 +631,7 @@ classdef Dobot < handle
 
         %% CheckEllipsoidCollision
         % This function was derived from Laboratory 6 Exercises
-        % Checks to see if an obstacle will collide with any of the links of the Dobot arm 
-        % Determines whether the points of an obstacle object lay inside
-        % any of the ellipsoids mapped to the robot links. If any points
-        % lay inside the ellipsoids a collision has been detected and will
-        % return 1, otherwise it will return 0
+        
         function collisionCheck = CheckEllipsoidCollision(self, obstaclePoints, jointAngles, radii)
             centrePoint = [0 0 0];
             tr = zeros(4,4,self.model.n+1);
