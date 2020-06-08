@@ -86,8 +86,7 @@ function btn_StartSim_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Mode used as output for main menu gui:
- % - 1: Start Simulation
+% Mode used as output for main menu gui. 
 handles.mode = 1;
 guidata(hObject,handles);
 figure1_CloseRequestFcn(handles.figure1, eventdata, handles);
@@ -97,9 +96,6 @@ function btn_AdvancedTeach_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_AdvancedTeach (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Mode used as output for main menu gui:
- % - 2: Advanced Teach Mode
 handles.mode = 2;
 guidata(hObject,handles);
 figure1_CloseRequestFcn(handles.figure1, eventdata, handles);
@@ -109,9 +105,6 @@ function btn_SafetyDemo_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_SafetyDemo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Mode used as output for main menu gui:
- % - 3: Safety Demo
 handles.mode = 3;
 guidata(hObject,handles);
 figure1_CloseRequestFcn(handles.figure1, eventdata, handles);
@@ -136,9 +129,6 @@ function btn_Exit_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_Exit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Mode used as output for main menu gui:
- % - 0: Close GUI and don't do anything else
 handles.mode = 0;
 guidata(hObject,handles);
 figure1_CloseRequestFcn(handles.figure1, eventdata, handles);

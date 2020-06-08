@@ -82,6 +82,7 @@ varargout{1} = handles.output;
 
 % --- Executes on button press in btn_EStop.
 function btn_EStop_Callback(hObject, eventdata, handles)
+%Toggle EStop boolean and turn off GUI controls as necessary
 handles.EStopPress = ~handles.EStopPress;
 if ~handles.EStopPress
     handles.InsertObstacle.Enable = 'on';
@@ -106,7 +107,7 @@ guidata(hObject, handles);
 
 % --- Executes on button press in btn_InsertObstruction.
 function btn_InsertObstruction_Callback(hObject, eventdata, handles)
-
+% Insert hand obstruction into light curtain
 handles.plc.InsertObstruction();
 guidata(hObject, handles);
 
@@ -114,6 +115,7 @@ guidata(hObject, handles);
 
 % --- Executes on button press in btn_RemoveObstruction.
 function btn_RemoveObstruction_Callback(hObject, eventdata, handles)
+% Remove hand obstruction from light curtain
 handles.plc.RemoveObstruction();
 guidata(hObject, handles);
 
@@ -154,11 +156,13 @@ end
 
 % --- Executes on button press in btn_RemoveObstacle.
 function btn_RemoveObstacle_Callback(hObject, eventdata, handles)
+% Remove collision obstacle from scene
 handles.plc.RemoveObstacle();
 guidata(hObject, handles);
 
 % --- Executes on button press in btn_InsertObstacle.
 function btn_InsertObstacle_Callback(hObject, eventdata, handles)
+% Insert collision obstacle at desired location into scene
 obstacleX = str2double(handles.txt_ObstacleX.String);
 obstacleY = str2double(handles.txt_ObstacleY.String);
 obstacleZ = str2double(handles.txt_ObstacleZ.String);
@@ -213,11 +217,13 @@ end
 
 % --- Executes on button press in btn_InsertTarget.
 function btn_InsertTarget_Callback(hObject, eventdata, handles)
-hold on;
+% Insert target object at desired location
 targetX = str2double(get(handles.txt_TargetX, 'String'))
 targetY = str2double(get(handles.txt_TargetY, 'String'))
 targetRot = str2double(get(handles.txt_TargetRot, 'String'))
 targetPose = transl(targetX, targetY, handles.plc.environment.foundation.dimensions(3)) * trotz(deg2rad(targetRot));
+
+% Select target object of choice
 if get(handles.rad_TargetRed, 'Value') == 1
     handles.plc.InsertTarget(targetPose, 'r');
 
@@ -232,6 +238,7 @@ guidata(hObject, handles);
 
 % --- Executes on button press in btn_StartSim.
 function btn_StartSim_Callback(hObject, eventdata, handles)
+% Enable all GUI controls once simulation has started
 handles.btn_InsertObstacle.Enable = 'on';
 handles.btn_RemoveObstacle.Enable = 'on';
 handles.btn_InsertObstruction.Enable = 'on';

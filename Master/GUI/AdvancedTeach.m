@@ -56,17 +56,22 @@ function AdvancedTeach_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 
-
-id = 2; % Note: may need to be changed if multiple joysticks present
+% Detect connected joystick - ID of 2 due to vjoy
+id = 2;
 try
     handles.joy = vrjoystick(id);
 end
+
+% Generate robot/linear rail for teaching
 handles.robot = Dobot('BasePose', transl(0, 0, 0));
 handles.robot.GenerateLinearRail([0,0,0]);
 hold on;
 handles.robot.Display;
 
+% Distance to translate EE pose when using jog button
 handles.teachDist = 0.002;
+
+% Set slider min and max to Dobot joint limits
 set(handles.slider_q1, 'min', rad2deg(handles.robot.model.qlim(1, 1)));
 set(handles.slider_q1, 'max', rad2deg(handles.robot.model.qlim(1, 2)));
 set(handles.slider_q2, 'min', rad2deg(handles.robot.model.qlim(2, 1)));
@@ -80,6 +85,7 @@ set(handles.slider_q5, 'max', rad2deg(handles.robot.model.qlim(5, 2)));
 set(handles.slider_LR, 'min', 0);
 set(handles.slider_LR, 'max', handles.robot.linearRailTravelDist);
 
+% Populate sliders, textboxes with robot info
 localQ0 = rad2deg(handles.robot.model.getpos);
 EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
 orient = tr2rpy(EEPose0, 'deg');
@@ -99,9 +105,10 @@ set(handles.slider_q4, 'Value', localQ0(4));
 set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
 set(handles.slider_q5, 'Value', localQ0(5));
 set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
+
+% Save starting base location of robot for use when jogging linear rail
 handles.startingBase = handles.robot.model.base;
 
-%UpdateFields(hObject, eventdata, handles);
 % Update handles structure
 guidata(hObject, handles);
 
@@ -122,6 +129,8 @@ function slider_LR_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+% Gets slider value and updates all values accordingly
 localQ0 = handles.robot.model.getpos;
 LRValue = handles.slider_LR.Value;
 handles.robot.model.base = handles.startingBase * transl(LRValue, 0, 0);
@@ -165,6 +174,7 @@ end
 
 
 function txt_LRX_Callback(hObject, eventdata, handles)
+% Gets text value and updates all values accordingly
 localQ0 = handles.robot.model.getpos;
 LRValue = str2double(handles.txt_LRX.String);
 handles.robot.model.base = handles.startingBase * transl(LRValue, 0, 0);
@@ -213,6 +223,9 @@ function btn_JogXPos_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogXPos (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Set target EE pose then use ikcon to get joint angles
+% Update all values accordingly
 localQ0 = handles.robot.model.getpos;
 EEPose0 = handles.robot.model.fkine(localQ0);
 EEPose1 = EEPose0 * transl(handles.teachDist, 0, 0);
@@ -246,6 +259,9 @@ function btn_JogXNeg_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogXNeg (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Set target EE pose then use ikcon to get joint angles
+% Update all values accordingly
 localQ0 = handles.robot.model.getpos;
 EEPose0 = handles.robot.model.fkine(localQ0);
 EEPose1 = EEPose0 * transl(-handles.teachDist, 0, 0);
@@ -279,6 +295,9 @@ function btn_JogYPos_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogYPos (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Set target EE pose then use ikcon to get joint angles
+% Update all values accordingly
 localQ0 = handles.robot.model.getpos;
 EEPose0 = handles.robot.model.fkine(localQ0);
 EEPose1 = EEPose0 * transl(0, handles.teachDist, 0);
@@ -313,6 +332,9 @@ function btn_JogYNeg_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogYNeg (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Set target EE pose then use ikcon to get joint angles
+% Update all values accordingly
 localQ0 = handles.robot.model.getpos;
 EEPose0 = handles.robot.model.fkine(localQ0);
 EEPose1 = EEPose0 * transl(0, -handles.teachDist, 0);
@@ -346,6 +368,9 @@ function btn_JogZPos_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogZPos (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Set target EE pose then use ikcon to get joint angles
+% Update all values accordingly
 localQ0 = handles.robot.model.getpos;
 EEPose0 = handles.robot.model.fkine(localQ0);
 EEPose1 = EEPose0 * transl(0, 0, -handles.teachDist);
@@ -379,6 +404,9 @@ function btn_JogZNeg_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_JogZNeg (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Set target EE pose then use ikcon to get joint angles
+% Update all values accordingly
 localQ0 = handles.robot.model.getpos;
 EEPose0 = handles.robot.model.fkine(localQ0);
 EEPose1 = EEPose0 * transl(0, 0, handles.teachDist);
@@ -481,6 +509,8 @@ function btn_inverse_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_inverse (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Used to set EE pose given coordinatess
 EEPose = transl(str2double(handles.txt_invX.String), str2double(handles.txt_invY.String), str2double(handles.txt_invZ.String)) * trotx(pi);
 q0 = handles.robot.model.getpos;
 q1 = handles.robot.model.ikcon(EEPose, q0);
@@ -518,6 +548,7 @@ function slider_q1_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
+% Get slider value and update values as necessary
 localQ0 = rad2deg(handles.robot.model.getpos);
 localQ0(1) = handles.slider_q1.Value;
 handles.robot.model.animate(deg2rad(localQ0));
@@ -552,6 +583,8 @@ function txt_q1_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txt_q1 as text
 %        str2double(get(hObject,'String')) returns contents of txt_q1 as a double
+
+% Get text value and update values as necessary
 localQ0 = rad2deg(handles.robot.model.getpos);
 localQ0(1) = str2double(handles.txt_q1.String);
 handles.robot.model.animate(deg2rad(localQ0));
@@ -600,6 +633,8 @@ function slider_q2_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+% Get slider value and update values as necessary
 localQ0 = rad2deg(handles.robot.model.getpos);
 localQ0(2) = handles.slider_q2.Value;
 handles.robot.model.animate(deg2rad(localQ0));
@@ -646,6 +681,8 @@ function txt_q2_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txt_q2 as text
 %        str2double(get(hObject,'String')) returns contents of txt_q2 as a double
+
+% Get text value and update values as necessary
 localQ0 = rad2deg(handles.robot.model.getpos);
 localQ0(2) = str2double(handles.txt_q2.String);
 handles.robot.model.animate(deg2rad(localQ0));
@@ -693,6 +730,8 @@ function slider_q3_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+% Get slider value and update values as necessary
 localQ0 = rad2deg(handles.robot.model.getpos);
 localQ0(3) = handles.slider_q3.Value;
 handles.robot.model.animate(deg2rad(localQ0));
@@ -739,6 +778,8 @@ function txt_q3_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txt_q3 as text
 %        str2double(get(hObject,'String')) returns contents of txt_q3 as a double
+
+% Get text value and update values as necessary
 localQ0 = rad2deg(handles.robot.model.getpos);
 localQ0(3) = str2double(handles.txt_q3.String);
 handles.robot.model.animate(deg2rad(localQ0));
@@ -781,36 +822,7 @@ end
 
 % --- Executes on slider movement.
 function slider_q4_Callback(hObject, eventdata, handles)
-% hObject    handle to slider_q4 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-%{
-localQ0 = rad2deg(handles.robot.model.getpos);
-localQ0(4) = handles.slider_q4.Value;
-handles.robot.model.animate(deg2rad(localQ0));
-
-EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
-orient = tr2rpy(EEPose0, 'deg');
-set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
-set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
-set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
-set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
-set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
-set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
-set(handles.slider_q1, 'Value', localQ0(1));
-set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
-set(handles.slider_q2, 'Value', localQ0(2));
-set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
-set(handles.slider_q3, 'Value', localQ0(3));
-set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
-set(handles.slider_q4, 'Value', localQ0(4));
-set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
-set(handles.slider_q5, 'Value', localQ0(5));
-set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
-%}
+% No access to joint 4 because it MUST remain parallel to ground
 guidata(hObject, handles);
 
 
@@ -828,36 +840,7 @@ end
 
 
 function txt_q4_Callback(hObject, eventdata, handles)
-% hObject    handle to txt_q4 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txt_q4 as text
-%        str2double(get(hObject,'String')) returns contents of txt_q4 as a double
-%{
-localQ0 = rad2deg(handles.robot.model.getpos);
-localQ0(4) = str2double(handles.txt_q4.String);
-handles.robot.model.animate(deg2rad(localQ0));
-
-EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
-orient = tr2rpy(EEPose0, 'deg');
-set(handles.txt_EEPX, 'String', sprintf("%.3f", EEPose0(1, 4)));
-set(handles.txt_EEPY, 'String', sprintf("%.3f", EEPose0(2, 4)));
-set(handles.txt_EEPZ, 'String', sprintf("%.3f", EEPose0(3, 4)));
-set(handles.txt_EERR, 'String', sprintf("%.3f", orient(1)));
-set(handles.txt_EERP, 'String', sprintf("%.3f", orient(2)));
-set(handles.txt_EERY, 'String', sprintf("%.3f", orient(3)));
-set(handles.slider_q1, 'Value', localQ0(1));
-set(handles.txt_q1, 'String', sprintf("%.3f", localQ0(1)));
-set(handles.slider_q2, 'Value', localQ0(2));
-set(handles.txt_q2, 'String', sprintf("%.3f", localQ0(2)));
-set(handles.slider_q3, 'Value', localQ0(3));
-set(handles.txt_q3, 'String', sprintf("%.3f", localQ0(3)));
-set(handles.slider_q4, 'Value', localQ0(4));
-set(handles.txt_q4, 'String', sprintf("%.3f", localQ0(4)));
-set(handles.slider_q5, 'Value', localQ0(5));
-set(handles.txt_q5, 'String', sprintf("%.3f", localQ0(5)));
-%}
+% No access to joint 4 because it MUST remain parallel to ground
 guidata(hObject, handles);
 
 
@@ -883,6 +866,8 @@ function slider_q5_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+% Get slider value and update values as necessary
 localQ0 = rad2deg(handles.robot.model.getpos);
 localQ0(5) = handles.slider_q5.Value;
 handles.robot.model.animate(deg2rad(localQ0));
@@ -929,6 +914,8 @@ function txt_q5_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txt_q5 as text
 %        str2double(get(hObject,'String')) returns contents of txt_q5 as a double
+
+% Get text value and update values as necessary
 localQ0 = rad2deg(handles.robot.model.getpos);
 localQ0(5) = str2double(handles.txt_q5.String);
 handles.robot.model.animate(deg2rad(localQ0));
@@ -968,29 +955,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-function UpdateFields(hObject, eventdata, handles)
-handles = guidata(hObject);
-localQ = rad2deg(handles.robot.model.getpos);EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
-disp(1);
-EEPose = handles.robot.model.fkine(localQ)
-disp(2);
-set(handles.slider_q1, 'Value', localQ(1));
-set(handles.txt_q1, 'String', sprintf('%.3f', localQ(1)));
-set(handles.slider_q2, 'Value', localQ(2));
-set(handles.txt_q2, 'String', sprintf('%.3f', localQ(2)));
-set(handles.slider_q3, 'Value', localQ(3));
-set(handles.txt_q3, 'String', sprintf('%.3f', localQ(3)));
-set(handles.slider_q4, 'Value', localQ(4));
-set(handles.txt_q4, 'String', sprintf('%.3f', localQ(4)));
-set(handles.slider_q5, 'Value', localQ(5));
-set(handles.txt_q5, 'String', sprintf('%.3f', localQ(5)));
-
-set(handles.txt_EEPX, 'String', sprintf('%.3f', EEPose(1, 4)));
-set(handles.txt_EEPY, 'String', sprintf('%.3f', EEPose(2, 4)));
-set(handles.txt_EEPZ, 'String', sprintf('%.3f', EEPose(3, 4)));
-guidata(hObject, handles);
-
-
 % --- Executes on button press in check_Controller.
 function check_Controller_Callback(hObject, eventdata, handles)
 % hObject    handle to check_Controller (see GCBO)
@@ -999,21 +963,27 @@ function check_Controller_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of check_Controller
 %value = get(handles.check_Controller, 'Value'); for outside this function
+
+% Check if 'use controller' checkbox is true
 if get(hObject, 'Value') == 1
     disp("Check box on");
+    
+    % Linear Multiplier used for convert joystick axes to EE movement
     linearMultiplier = 0.01;
     while (get(hObject, 'Value') == 1)
         [axes, buttons, povs] = read(handles.joy);
         
-        %non rmrc teach pendant to keep joint 4 parallel
-        xMov = -axes(2) * linearMultiplier;
-        yMov = axes(1) * linearMultiplier;
-        zMov = axes(3) * linearMultiplier;
-        LRMov = -axes(5) * linearMultiplier;
+        % non rmrc teach pendant to keep joint 4 parallel
+        xMov = -axes(2) * linearMultiplier;  % Left joystick up/down
+        yMov = axes(1) * linearMultiplier;   % Left joystick left/right
+        zMov = axes(3) * linearMultiplier;   % Left/Right triggers
+        LRMov = -axes(5) * linearMultiplier; % Right joystick up/down
 
+        % Move base position based on right joystick
         handles.robot.model.base = handles.robot.model.base * transl(LRMov, 0, 0);
         q = handles.robot.model.getpos;
         
+        % Keep robot base within linear rail extents
         if handles.robot.model.base(1, 4) >= handles.startingBase(1, 4) + handles.robot.linearRailTravelDist
             handles.robot.model.base(1, 4) = handles.startingBase(1, 4) + handles.robot.linearRailTravelDist;
         elseif handles.robot.model.base(1, 4) <= handles.startingBase(1, 4)
@@ -1021,14 +991,15 @@ if get(hObject, 'Value') == 1
         end
         handles.robot.model.animate(q);
         
+        % Move EEpose based on left joystick and triggers
         q0 = handles.robot.model.getpos;
         EEPose0 = handles.robot.model.fkine(q0);
         EEPose1 = EEPose0 * transl(xMov, yMov, zMov);
         q1 = handles.robot.model.ikcon(EEPose1, q0);
-        
         handles.robot.model.animate(q1);
         drawnow(); 
         
+        % Update values as necessary
         localQ0 = rad2deg(handles.robot.model.getpos);
         EEPose0 = handles.robot.model.fkine(deg2rad(localQ0));
         

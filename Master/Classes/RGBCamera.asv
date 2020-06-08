@@ -271,22 +271,18 @@ classdef RGBCamera < handle
        
            % Calculate global centroid position using known camera height
            % and formula:
-           % X = cam(x)-((image(X)-principlePoint) * height) / focal length
+           % X = cam(x) - ((image(X) - principle point) * camHeight) / (
            posX = self.cam.T(1, 4) - ((self.mappedCentroids(:, 1) - self.cam.pp(1)) * self.camHeight) / (10000 * self.cam.f);
            posY = self.cam.T(2, 4) - ((self.mappedCentroids(:, 2) - self.cam.pp(2)) * self.camHeight) / (10000 * self.cam.f);
            pixelColours = impixel(self.im, self.blobCentroids(:, 1), self.blobCentroids(:, 2));
            [numRows numCols] = size(pixelColours);
            
-           % Cycle through each centroid and filter out by colour and by camera plot Y coords:
-           % - Average R G B values
-           % - High value (>200) would be white - delete
-           % - Low value (<20) would be balck - delete
            j = 1;
            for i = 1:numRows
                avg =  (pixelColours(i, 1) + pixelColours(i, 2) + pixelColours(i, 3)) / 3;
                if (avg < 200 && avg > 25 && self.blobPerimeters(i) < 300 && self.mappedCentroids(i, 1) > 0 && self.mappedCentroids(i, 2) > 0)
                    self.globalCentroids(j, 1) = posX(i);
-                   self.globalCentroids(j, 2) = -1*posY(i); % Camera pose is rotates, so must invert Y vals
+                   self.globalCentroids(j, 2) = -1*posY(i);
                    self.globalOrientations(j) = self.blobOrientations(i);
                    self.globalCentroidAreas(j) = self.blobAreas(i);
                    if pixelColours(i, 1) >= 150
@@ -299,7 +295,7 @@ classdef RGBCamera < handle
                        self.globalCentroidColours(j) = 'g';
                    end
                    
-                   if pixelColours(i, 3) >= 100 % Had issues with higher tolerance for blue
+                   if pixelColours(i, 3) >= 100
                        disp('BLUE OBJECT DETECTED');
                        self.globalCentroidColours(j) = 'b';
                    end
@@ -308,7 +304,7 @@ classdef RGBCamera < handle
                end
            end
        end
-       %% LocateObjects - Run all other functions to fine target objects
+       %% Detect Centroids
        function LocateObjects(self)
            self.PlotObjects();
            self.ConvertImage();
