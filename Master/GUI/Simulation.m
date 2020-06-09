@@ -91,6 +91,7 @@ if ~handles.EStopPress
     handles.RemoveObstruction.Enable = 'on';
     guidata(hObject, handles);
     disp("EStop Released - Robot Resuming");
+    hObject.BackgroundColor = [0.94 0.94 0.94];
     handles.plc.emergencyStop = 0;
     
 else
@@ -100,6 +101,7 @@ else
     handles.RemoveObstruction.Enable = 'off';
     guidata(hObject, handles);
     disp("EStop Pressed - Robot Stopping");
+    hObject.BackgroundColor = [1 0 0];
     handles.plc.emergencyStop = 1;
 end
 
