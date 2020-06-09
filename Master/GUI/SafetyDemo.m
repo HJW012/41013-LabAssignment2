@@ -93,8 +93,8 @@ handles.cam = CentralCamera('focal', 0.08, 'pixel', 10e-5, ...
 % Frames per second determining how often image plane updates
 handles.fps = 25;
 
-% End Effector Velocity Gain
-handles.lambda = 4;
+% End Effector Velocity Gain - should be between zero and 1
+handles.lambda = 1;
 
 % Depth of each point in camera plane - guess and check to find best value
 handles.depth = 0.15;
@@ -211,7 +211,7 @@ while get(hObject, 'Value') == 1.0 && handles.startRetreating
      end
 
     % Update each joint based on fps and joint velocity
-    % - Decreasing fps will result in smaller movements each frame
+    % - Increasing fps will result in smaller movements each frame
     handles.q = handles.q0 + (1/handles.fps)*handles.qp;
     handles.robot.model.animate(handles.q');
 
