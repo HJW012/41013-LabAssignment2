@@ -209,7 +209,7 @@ classdef GlobalController < handle
            self.MoveToTargetLinearRail(targetPose(1,4));
 
            disp('Target Pose: ');
-           disp(targetPose);
+           disp(targetPose * trotx(pi));
 
            % Determine which of the environment target objects is
            % being collected by iterating through each target
@@ -228,9 +228,6 @@ classdef GlobalController < handle
                    shortestDistance = distance;
                end
            end
-
-           % Get current joint angles
-           q0 = self.environment.robot.model.getpos;
 
            % Calculate the joint angles to reach a waypoint being
            % 10cm above the target object
@@ -271,7 +268,7 @@ classdef GlobalController < handle
            self.MoveRobotArmJointAngles(self.environment.robot.jointAngles);
 
            disp('Target Pose: ');
-           disp(depositPose);
+           disp(depositPose * trotx(pi));
 
            % Move along linear rail until the end of the rail
            self.MoveToTargetLinearRail(depositPose(1,4));
