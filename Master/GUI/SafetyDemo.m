@@ -301,7 +301,7 @@ while get(handles.check_Controller, 'Value') == 0 && handles.startRetreating
      end
 
     % Update each joint based on fps and joint velocity
-    % - Decreasing fps will result in smaller movements each frame
+    % - Increasing fps will result in smaller movements each frame
     handles.q = handles.q0 + (1/handles.fps)*handles.qp;
     handles.robot.model.animate(handles.q');
 
