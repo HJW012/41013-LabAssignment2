@@ -1,0 +1,48 @@
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.3-c011 66.145661, 2012/02/06-14:56:27        ">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about=""
+    xmlns:xmpDM="http://ns.adobe.com/xmp/1.0/DynamicMedia/"
+    xmlns:stDim="http://ns.adobe.com/xap/1.0/sType/Dimensions#"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:xmp="http://ns.adobe.com/xap/1.0/"
+    xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"
+    xmlns:stEvt="http://ns.adobe.com/xap/1.0/sType/ResourceEvent#"
+   xmpDM:videoFrameRate="50.000000"
+   xmpDM:videoFieldOrder="Progressive"
+   xmpDM:videoPixelAspectRatio="4/3"
+   xmpDM:previewRenderOriginalHadNoAlpha="False"
+   xmpDM:startTimeScale="50"
+   xmpDM:startTimeSampleSize="1"
+   dc:format="P2 Movie"
+   xmp:CreateDate="2020-06-12T18:14:29+10:00"
+   xmp:ModifyDate="2020-06-12T18:15+10:00"
+   xmp:MetadataDate="2020-06-12T18:15+10:00"
+   xmpMM:InstanceID="xmp.iid:32A150CF84ACEA118D9FA9BE7D74C47F"
+   xmpMM:DocumentID="xmp.did:31A150CF84ACEA118D9FA9BE7D74C47F"
+   xmpMM:OriginalDocumentID="xmp.did:31A150CF84ACEA118D9FA9BE7D74C47F">
+   <xmpDM:videoFrameSize
+    stDim:w="960"
+    stDim:h="720"
+    stDim:unit="pixel"/>
+   <xmpDM:duration
+    xmpDM:value="983"
+    xmpDM:scale="1/50"/>
+   <xmpDM:startTimecode
+    xmpDM:timeFormat="50Timecode"
+    xmpDM:timeValue="00:00:09:29"/>
+   <xmpDM:altTimecode
+    xmpDM:timeValue="00:00:09:29"
+    xmpDM:timeFormat="50Timecode"/>
+   <xmpMM:History>
+    <rdf:Seq>
+     <rdf:li
+      stEvt:action="saved"
+      stEvt:instanceID="xmp.iid:32A150CF84ACEA118D9FA9BE7D74C47F"
+      stEvt:when="2020-06-12T18:15+10:00"
+      stEvt:softwareAgent="Adobe Premiere Pro CS6 (Windows)"
+      stEvt:changed="/"/>
+    </rdf:Seq>
+   </xmpMM:History>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>

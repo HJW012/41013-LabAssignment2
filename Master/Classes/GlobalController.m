@@ -49,6 +49,8 @@ classdef GlobalController < handle
           
           % Display the objects in the environment.
           self.environment.Display();
+          % Display camera in the environment
+           self.camera.DisplayCamera();
        end
        %% Insert Obstacle for collision detection
        % Function used to generate an obstacle to create a forced collision
@@ -133,7 +135,7 @@ classdef GlobalController < handle
            % Determining if blobs are targets or deposit locations based on
            % blob area
            self.AssignCentroids();
-           
+           %pause();
            disp('Commencing Pick-Up Sequence');
 
            % Calculate number of red targets to pick up
@@ -311,8 +313,7 @@ classdef GlobalController < handle
        % Initialisation function used to display the camera and add the
        % target and deposit objects to the camera object
        function Init(self)
-           % Display camera in the environment
-           self.camera.DisplayCamera();
+           
            
            % Pass each of the target objects to the camera for processing
            for i = 1:size(self.environment.targets,2)
